@@ -36,6 +36,8 @@ sub initx {
             if ($len eq 2) {
                 $key = $names[0];
                 $val = $names[1];
+                $key =~ s/(^ +| +$)//g; 
+                $val =~ s/(^ +| +$)//g; 
                 my @vals = split(/,/, $val);
                 group $key => (@vals);
             }
@@ -65,6 +67,13 @@ task "test", sub {
     say run "uptime";
 };
 
+## task custom
+desc "one custom task: --cmd=..";
+task "custom", sub {
+    my $params = shift;
+    my $cmd = $params->{cmd};
+    say run "$cmd";
+};
 
 
 
@@ -94,13 +103,13 @@ task "prepare_hosts", sub {
 
     # clear previous
     my $cmdstr = <<END;
-    sed -in /"## custom hosts"/,/""/d /etc/hosts;
+    sed -in /"## custom hosts begin"/,/"## custom hosts end"/d /etc/hosts;
 END
     say run $cmdstr;
 
     # set latest
     $cmdstr = <<END; 
-    key="custom hosts"; extra="/tmp/hosts.extra";
+    key="custom hosts begin"; extra="/tmp/hosts.extra";
     cat /etc/hosts | grep "\$key" >/dev/null 2>&1 || cat \$extra >> /etc/hosts;
     rm -f /tmp/hosts.extra;
 END
