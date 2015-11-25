@@ -7,28 +7,50 @@ public_key "~/.ssh/id_rsa.pub";
 key_auth;
 
 
-## ==============
-## groups
-group all => "bogon1", "bogon2";
+## init groups
+sub initx {
+    use File::Spec;
+    $path = File::Spec->rel2abs(__FILE__);
+    ($vol, $dir, $file) = File::Spec->splitpath($path);
+
+    $hosts = "/tmp/hosts.extra";
+    system "sh $dir/genhosts.sh $hosts";
+
+    @groups = ();
+    open(FILE, "<", $hosts) || die "cannot open: $!\n";
+    while ($line = <FILE>){
+        if ($line =~ /\d/) {
+            chomp($line);
+            my @names = split(/ +/, $line);
+            my $len = @names;
+            if ($len eq 2) {
+                @groups = (@groups, $names[1]);
+            }
+        }
+    }
+    close(FILE);
+}
+
+&initx;
+group all => (@groups);
+
+
+## misc config
 #sudo TRUE;
 #sudo_password "mysudopw"
-
-
-## ==============
-## misc config
 logging to_file => "/tmp/rex.log";
 #logging to_syslog => "local0";
 timeout 2; # ssh timeout
 #parallelism 2;
-#use Rex::Misc::ShellBlock;
 
 
-## ==============
-## task
+## task testing
 desc "one test example";
 task "test", sub {
     say run "uptime";
 };
+
+
 
 
 ## ==============
@@ -36,7 +58,6 @@ task "test", sub {
 desc "set ssh public key";
 user "peter";
 task "prepare_ssh", sub {
-    #user "peter";
     upload "~/.ssh/id_rsa.pub", "/tmp";
 
     my $cmdstr = <<END;
@@ -80,5 +101,4 @@ task "prepare_docker", sub {
     upload "/etc/default/docker", "/etc/default/docker";
     upload "/lib/systemd/system/docker.service", "/lib/systemd/system/docker.service";
 };
-
 
