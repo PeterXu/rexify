@@ -7,7 +7,7 @@ gen_hosts() {
     [ ! -f server.ini ] && return 1
 
     local etc_hosts="$1"
-    local etc_key="## custom hosts"
+    local etc_key="## custom hosts begin"
     echo "" > $etc_hosts
     echo "$etc_key" >> $etc_hosts
 
@@ -16,13 +16,14 @@ gen_hosts() {
     for key in $keys; do
         if [[ "$key" =~ "@" ]]; then
             host=$(mapget $key host)
-            echo "#${key:1} = $host" >> $etc_hosts
+            echo "#-${key:1} = $host" >> $etc_hosts
         else
             host=$(mapget $key host)
             user=$(mapget $key user)
             echo "$host  $key" >> $etc_hosts
         fi
     done
+    echo "## custom hosts end" >> $etc_hosts
 }
 
 

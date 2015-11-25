@@ -10,29 +10,44 @@ key_auth;
 ## init groups
 sub initx {
     use File::Spec;
-    $path = File::Spec->rel2abs(__FILE__);
-    ($vol, $dir, $file) = File::Spec->splitpath($path);
+    my $path = File::Spec->rel2abs(__FILE__);
+    my ($vol, $dir, $file) = File::Spec->splitpath($path);
 
-    $hosts = "/tmp/hosts.extra";
+    my $hosts = "/tmp/hosts.extra";
     system "sh $dir/genhosts.sh $hosts";
 
-    @groups = ();
     open(FILE, "<", $hosts) || die "cannot open: $!\n";
     while ($line = <FILE>){
-        if ($line =~ /\d/) {
+        if ($line =~ /^\d/) {
             chomp($line);
             my @names = split(/ +/, $line);
             my $len = @names;
             if ($len eq 2) {
-                @groups = (@groups, $names[1]);
+                my $key = $names[0];
+                my $val = $names[1];
+                @groups_all = (@groups_all, $val);
+                group $val => $key;
+            }
+        }elsif ($line =~ /^#-/){
+            chomp($line);
+            $line = substr($line, 2, length($line));
+            my @names = split(/=/, $line);
+            my $len = @names;
+            if ($len eq 2) {
+                $key = $names[0];
+                $val = $names[1];
+                my @vals = split(/,/, $val);
+                group $key => (@vals);
             }
         }
     }
     close(FILE);
 }
 
+@group_all = ();
 &initx;
-group all => (@groups);
+group groups_all => (@groups_all);
+#exit 0;
 
 
 ## misc config
