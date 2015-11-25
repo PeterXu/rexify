@@ -1,10 +1,27 @@
-user "peter";
+$ruser = "peter";
+$rlog  = "/tmp/rex.log";
+$rpass = $ENV{RPASS};
+
+if (length($rpass) <= 0) {
+    print "[WARN] Please export RPASS=...\n";
+    exit 0;
+}
+
+user "$ruser";
 #password "";
 #pass_auth;
-
 private_key "~/.ssh/id_rsa";
 public_key "~/.ssh/id_rsa.pub";
 key_auth;
+
+logging to_file => "$rlog";
+#logging to_syslog => "local0";
+timeout 2; # ssh timeout
+#parallelism 2;
+## misc config
+sudo TRUE;
+sudo_password "$rpass";
+
 
 
 ## init groups
@@ -52,15 +69,6 @@ group groups_all => (@groups_all);
 #exit 0;
 
 
-## misc config
-#sudo TRUE;
-#sudo_password "mysudopw"
-logging to_file => "/tmp/rex.log";
-#logging to_syslog => "local0";
-timeout 2; # ssh timeout
-#parallelism 2;
-
-
 ## task testing
 desc "one test example";
 task "test", sub {
@@ -92,7 +100,7 @@ task "custom", sub {
 ## ==============
 ## task ssh
 desc "set ssh public key";
-user "peter";
+user "$ruser";
 task "prepare_ssh", sub {
     upload "~/.ssh/id_rsa.pub", "/tmp";
 
@@ -109,7 +117,7 @@ END
 ## ==============
 ## task hosts
 desc "set /etc/hosts";
-user "root";
+user "$ruser";
 task "prepare_hosts", sub {
     upload "/tmp/hosts.extra", "/tmp/hosts.extra";
 
@@ -130,11 +138,28 @@ END
 
 
 ## ==============
+## task preapre apt
+desc "config apt";
+user "root";
+task "prepare_apt", sub {
+    upload "files/sources.list", "/etc/apt/sources.list";
+    upload "files/docker.list", "/etc/apt/sources.list.d/docker.list";
+
+    my $cmdstr = "apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D";
+    say run $cmdstr;
+    say run "apt-get update";
+};
+
+
+## ==============
 ## task docker
 desc "config docker";
-user "root";
+user "$ruser";
 task "prepare_docker", sub {
+    run "apt-get update";
+    pkg "docker-engine", ensure => "present";
     upload "/etc/default/docker", "/etc/default/docker";
     upload "/lib/systemd/system/docker.service", "/lib/systemd/system/docker.service";
+    say run "usermod -aG docker $ruser";
 };
 
