@@ -22,7 +22,7 @@ sub initx {
             chomp($line);
             my @names = split(/ +/, $line);
             my $len = @names;
-            if ($len eq 2) {
+            if ($len == 2) {
                 my $key = $names[0];
                 my $val = $names[1];
                 @groups_all = (@groups_all, $val);
@@ -33,7 +33,7 @@ sub initx {
             $line = substr($line, 2, length($line));
             my @names = split(/=/, $line);
             my $len = @names;
-            if ($len eq 2) {
+            if ($len == 2) {
                 $key = $names[0];
                 $val = $names[1];
                 $key =~ s/(^ +| +$)//g; 
@@ -68,11 +68,23 @@ task "test", sub {
 };
 
 ## task custom
-desc "one custom task: --cmd=..";
+desc "one custom task: --by=run|scp ..";
 task "custom", sub {
     my $params = shift;
-    my $cmd = $params->{cmd};
-    say run "$cmd";
+    my $by = $params->{by};
+    if ($by eq "run") {
+        my $cmd = $params->{cmd};
+        say run "$cmd";
+    }elsif($by eq "scp") {
+        my $src = $params->{src};
+        my $dst = $params->{dst};
+        if (length($dst) == 0) {
+            $dst = $src;
+        }
+        if (length($src) > 0) {
+            upload $src, $dst;
+        }
+    }
 };
 
 
