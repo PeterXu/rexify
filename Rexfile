@@ -77,7 +77,15 @@ task "test", sub {
 };
 
 ## task custom
-desc "one custom task: --by=run|scp ..";
+desc <<END;
+custom task with --by=run|scp, e.g,
+    --by=run --cmd="",
+    --by=scp --src="" --dst="",
+export RUSER=.. with real user, default '$ruser'.
+export RPASS=.. with sudo password, it will activate sudo.
+export RPASS= will deactivate sudo.
+...
+END
 task "custom", sub {
     my $params = shift;
     my $by = $params->{by};
@@ -210,4 +218,20 @@ task "prepare_base", sub {
     run "apt-get update";
     pkg [ qw/ufw iptables vim curl wget/ ], ensure => "present";
 };
+
+desc "install from config: --conf=etc/base.txt";
+task "prepare_soft", sub {
+    my $params = shift;
+    my $conf = $params->{conf};
+    if ($conf) {
+        open(FILE, "<", $conf) || die "cannot open: $!\n";
+        while ($line = <FILE>){
+            chomp($line);
+            $line =~ s/(^ +| +$)//g; 
+            if ($line !~ /^#/){
+                pkg "$line", ensure => "present";
+            }
+        }
+    }
+}
 

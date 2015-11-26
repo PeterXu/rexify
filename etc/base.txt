@@ -1,0 +1,6 @@
+vim
+ufw
+iptables
+wget
+curl
+sl
