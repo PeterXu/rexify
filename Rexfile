@@ -118,7 +118,7 @@ END
 
 
 ## ==============
-## task hosts
+## task /etc/hosts
 desc "set /etc/hosts";
 task "prepare_hosts", sub {
     upload "/tmp/hosts.extra", "/tmp/hosts.extra";
@@ -140,11 +140,11 @@ END
 
 
 ## ==============
-## task preapre apt
+## task apt-get
 desc "config apt";
 task "prepare_apt", sub {
-    upload "files/sources.list", "/etc/apt/sources.list";
-    upload "files/docker.list", "/etc/apt/sources.list.d/docker.list";
+    upload "files/apt/sources.list", "/etc/apt/sources.list";
+    upload "files/apt/docker.list", "/etc/apt/sources.list.d/docker.list";
 
     my $cmdstr = "apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D";
     say run $cmdstr;
@@ -158,8 +158,21 @@ desc "config docker";
 task "prepare_docker", sub {
     run "apt-get update";
     pkg "docker-engine", ensure => "present";
-    upload "/etc/default/docker", "/etc/default/docker";
-    upload "/lib/systemd/system/docker.service", "/lib/systemd/system/docker.service";
+    upload "files/etc/docker", "/etc/default/docker";
+    upload "files/etc/docker.service", "/lib/systemd/system/docker.service";
     say run "usermod -aG docker $ruser";
+
+    ## another way
+    # wget -qO- https://get.docker.com/gpg | sudo apt-key add -
+    # wget -qO- https://get.docker.com/ | sh
+};
+
+
+## ==============
+## task base soft
+desc "config base soft";
+task "prepare_base", sub {
+    run "apt-get update";
+    pkg [ qw/ufw iptables vim curl wget/ ], ensure => "present";
 };
 

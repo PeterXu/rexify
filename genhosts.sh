@@ -2,19 +2,21 @@
 
 source $ZBASH
 
+server_ini="./etc/server.ini"
+
 gen_hosts() 
 {
     [ $# -ne 1 ] && return 1
     [ -z "$1" ] && return 1
-    [ ! -f server.ini ] && return 1
+    [ ! -f $server_ini ] && return 1
 
     local etc_hosts="$1"
     local etc_key="## custom hosts begin"
     echo "" > $etc_hosts
     echo "$etc_key" >> $etc_hosts
 
-    ini-parse server.ini
-    local keys=$(ini-secs server.ini)
+    ini-parse $server_ini
+    local keys=$(ini-secs $server_ini)
     for key in $keys; do
         if [[ "$key" =~ "@" ]]; then
             host=$(mapget $key host)
@@ -30,8 +32,8 @@ gen_hosts()
 
 gen_example() 
 {
-    [ -f ./server.ini ] && return 0
-    cat > ./server.ini << EOF
+    [ -f $server_ini ] && return 0
+    cat > $server_ini << EOF
 [bogon1]
 host = 192.168.175.135
 user = peter
