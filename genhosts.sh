@@ -12,8 +12,7 @@ gen_hosts()
 
     local etc_hosts="$1"
     local etc_key="## custom hosts begin"
-    echo "" > $etc_hosts
-    echo "$etc_key" >> $etc_hosts
+    echo "$etc_key" > $etc_hosts
 
     ini-parse $server_ini
     local keys=$(ini-secs $server_ini)

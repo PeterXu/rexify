@@ -191,26 +191,10 @@ task "prepare_docker", sub {
             $updated = 1;
         };
 
-    my $changed = 0;
-    file "files/etc/docker", 
-        source    => "/etc/default/docker",
-        owner  => "root",
-        group  => "root",
-        mode  => 644,
-        on_change => sub {
-            $changed = 1;
-        };
+    upload "files/etc/docker", "/etc/default/docker";
+    upload "files/etc/docker.service", "/lib/systemd/system/docker.service";
 
-    file "files/etc/docker.service", 
-        source    => "/lib/systemd/system/docker.service",
-        owner  => "root",
-        group  => "root",
-        mode  => 644,
-        on_change => sub {
-            $changed = 1;
-        };
-
-    if ($updated == 1 && $changed == 1) {
+    if ($updated == 1) {
         say run "usermod -aG docker $ruser";
         service docker => "restart";
     }
