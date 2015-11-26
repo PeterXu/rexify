@@ -182,8 +182,14 @@ task "prepare_docker", sub {
     ## another way
     # wget -qO- https://get.docker.com/gpg | sudo apt-key add -
     # wget -qO- https://get.docker.com/ | sh
+
+    my $updated = 0;
     #run "apt-get update";
-    pkg "docker-engine", ensure => "present";
+    pkg "docker-engine", 
+        ensure => "present",
+        on_change => sub { 
+            $updated = 1;
+        };
 
     my $changed = 0;
     file "files/etc/docker", 
@@ -204,9 +210,9 @@ task "prepare_docker", sub {
             $changed = 1;
         };
 
-    if ($changed == 1) {
+    if ($updated == 1 && $changed == 1) {
         say run "usermod -aG docker $ruser";
-        #service docker => "restart";
+        service docker => "restart";
     }
 };
 
