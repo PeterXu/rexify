@@ -2,10 +2,6 @@ $ruser = "peter";
 $rpass = $ENV{RPASS};
 $rlog  = "/tmp/rex.log";
 
-if (!$rpass) {
-    print "[WARN] Please export RPASS=...\n";
-    exit 0;
-}
 $tuser = $ENV{RUSER};
 if ($tuser) {
     $ruser = $tuser;
@@ -23,9 +19,10 @@ logging to_file => "$rlog";
 timeout 2; # ssh timeout
 #parallelism 2;
 ## misc config
-sudo TRUE;
-sudo_password "$rpass";
-
+if ($rpass) {
+    sudo TRUE;
+    sudo_password "$rpass";
+}
 
 
 ## init groups
@@ -142,13 +139,31 @@ END
 ## ==============
 ## task apt-get
 desc "config apt";
-task "prepare_apt", sub {
-    upload "files/apt/sources.list", "/etc/apt/sources.list";
-    upload "files/apt/docker.list", "/etc/apt/sources.list.d/docker.list";
+task prepare_apt, sub {
+    my $changed = 0;
+    file "/etc/apt/sources.list.d/docker.list",
+        source    => "files/apt/docker.list",
+        owner  => "root",
+        group  => "root",
+        mode  => 644,
+        on_change => sub {
+            my $cmdstr = "apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D";
+            say run $cmdstr;
+            $changed = 1;
+        };
 
-    my $cmdstr = "apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D";
-    say run $cmdstr;
-    say run "apt-get update";
+    file "/etc/apt/sources.list",
+        source    => "files/apt/sources.list",
+        owner  => "root",
+        group  => "root",
+        mode  => 644,
+        on_change => sub {
+            $changed = 1;
+        };
+
+    if ($changed == 1) {
+        say run "apt-get update";
+    }
 };
 
 
@@ -156,15 +171,35 @@ task "prepare_apt", sub {
 ## task docker
 desc "config docker";
 task "prepare_docker", sub {
-    run "apt-get update";
-    pkg "docker-engine", ensure => "present";
-    upload "files/etc/docker", "/etc/default/docker";
-    upload "files/etc/docker.service", "/lib/systemd/system/docker.service";
-    say run "usermod -aG docker $ruser";
-
     ## another way
     # wget -qO- https://get.docker.com/gpg | sudo apt-key add -
     # wget -qO- https://get.docker.com/ | sh
+    #run "apt-get update";
+    pkg "docker-engine", ensure => "present";
+
+    my $changed = 0;
+    file "files/etc/docker", 
+        source    => "/etc/default/docker",
+        owner  => "root",
+        group  => "root",
+        mode  => 644,
+        on_change => sub {
+            $changed = 1;
+        };
+
+    file "files/etc/docker.service", 
+        source    => "/lib/systemd/system/docker.service",
+        owner  => "root",
+        group  => "root",
+        mode  => 644,
+        on_change => sub {
+            $changed = 1;
+        };
+
+    if ($changed == 1) {
+        say run "usermod -aG docker $ruser";
+        #service docker => "restart";
+    }
 };
 
 
