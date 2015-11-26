@@ -1,10 +1,14 @@
 $ruser = "peter";
-$rlog  = "/tmp/rex.log";
 $rpass = $ENV{RPASS};
+$rlog  = "/tmp/rex.log";
 
-if (length($rpass) <= 0) {
+if (!$rpass) {
     print "[WARN] Please export RPASS=...\n";
     exit 0;
+}
+$tuser = $ENV{RUSER};
+if ($tuser) {
+    $ruser = $tuser;
 }
 
 user "$ruser";
@@ -86,10 +90,10 @@ task "custom", sub {
     }elsif($by eq "scp") {
         my $src = $params->{src};
         my $dst = $params->{dst};
-        if (length($dst) == 0) {
+        if (!$dst) {
             $dst = $src;
         }
-        if (length($src) > 0) {
+        if ($src) {
             upload $src, $dst;
         }
     }
@@ -100,7 +104,6 @@ task "custom", sub {
 ## ==============
 ## task ssh
 desc "set ssh public key";
-user "$ruser";
 task "prepare_ssh", sub {
     upload "~/.ssh/id_rsa.pub", "/tmp";
 
@@ -117,7 +120,6 @@ END
 ## ==============
 ## task hosts
 desc "set /etc/hosts";
-user "$ruser";
 task "prepare_hosts", sub {
     upload "/tmp/hosts.extra", "/tmp/hosts.extra";
 
@@ -140,7 +142,6 @@ END
 ## ==============
 ## task preapre apt
 desc "config apt";
-user "root";
 task "prepare_apt", sub {
     upload "files/sources.list", "/etc/apt/sources.list";
     upload "files/docker.list", "/etc/apt/sources.list.d/docker.list";
@@ -154,7 +155,6 @@ task "prepare_apt", sub {
 ## ==============
 ## task docker
 desc "config docker";
-user "$ruser";
 task "prepare_docker", sub {
     run "apt-get update";
     pkg "docker-engine", ensure => "present";
