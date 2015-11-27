@@ -18,14 +18,41 @@ logging to_file => "$rlog";
 #logging to_syslog => "local0";
 timeout 2; # ssh timeout
 #parallelism 2;
-## misc config
-if ($rpass) {
-    sudo TRUE;
-    sudo_password "$rpass";
+
+
+## check sudo
+&checkx;
+sub checkx() {
+    use Term::ANSIColor qw(:constants);
+    $Term::ANSIColor::AUTORESET = 1;
+    my $sure;
+    if ($rpass) {
+        print BOLD YELLOW "\n[WARN] sudo activate?(y/n [n]):";
+        $sure = <STDIN>;
+        chomp($sure);
+        if ($sure eq "y") {
+            sudo TRUE;
+            sudo_password "$rpass";
+        }
+    }
+    if ($sure ne "y") {
+        print RED "[WARN] sudo deactivated!\n";
+    }
+
+    print BOLD YELLOW "\n[WARN] continue?(y/n [y]):";
+    $sure = <STDIN>;
+    chomp($sure);
+    print "\n\n";
+    if ($sure eq "n") {
+        exit 0;
+    }
 }
 
 
 ## init groups
+@groups_all = ();
+&initx;
+group zzzgroups_ => (@groups_all);
 sub initx {
     use File::Spec;
     my $path = File::Spec->rel2abs(__FILE__);
@@ -64,11 +91,9 @@ sub initx {
     close(FILE);
 }
 
-@group_all = ();
-&initx;
-group groups_all => (@groups_all);
-#exit 0;
 
+##========================================================
+##========================================================
 
 ## task testing
 desc "one test example";
@@ -105,8 +130,6 @@ task "custom", sub {
 };
 
 
-
-## ==============
 ## task ssh
 desc "set ssh public key";
 task "prepare_ssh", sub {
@@ -122,7 +145,6 @@ END
 };
 
 
-## ==============
 ## task /etc/hosts
 desc "set /etc/hosts";
 task "prepare_hosts", sub {
@@ -144,16 +166,15 @@ END
 };
 
 
-## ==============
 ## task apt-get
 desc "config apt";
 task prepare_apt, sub {
     my $changed = 0;
     file "/etc/apt/sources.list.d/docker.list",
-        source    => "files/apt/docker.list",
+        source => "files/apt/docker.list",
         owner  => "root",
         group  => "root",
-        mode  => 644,
+        mode   => 644,
         on_change => sub {
             my $cmdstr = "apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D";
             say run $cmdstr;
@@ -161,10 +182,10 @@ task prepare_apt, sub {
         };
 
     file "/etc/apt/sources.list",
-        source    => "files/apt/sources.list",
+        source => "files/apt/sources.list",
         owner  => "root",
         group  => "root",
-        mode  => 644,
+        mode   => 644,
         on_change => sub {
             $changed = 1;
         };
@@ -175,11 +196,10 @@ task prepare_apt, sub {
 };
 
 
-## ==============
 ## task docker
 desc "config docker";
 task "prepare_docker", sub {
-    ## another way
+    # another way
     # wget -qO- https://get.docker.com/gpg | sudo apt-key add -
     # wget -qO- https://get.docker.com/ | sh
 
@@ -201,7 +221,6 @@ task "prepare_docker", sub {
 };
 
 
-## ==============
 ## task base soft
 desc "config base soft";
 task "prepare_base", sub {
@@ -210,18 +229,31 @@ task "prepare_base", sub {
 };
 
 desc "install from config: --conf=etc/base.txt";
-task "prepare_soft", sub {
+task "prepare_softs", sub {
     my $params = shift;
     my $conf = $params->{conf};
     if ($conf) {
+        my @softs = ();
         open(FILE, "<", $conf) || die "cannot open: $!\n";
         while ($line = <FILE>){
             chomp($line);
             $line =~ s/(^ +| +$)//g; 
             if ($line !~ /^#/){
-                pkg "$line", ensure => "present";
+                @softs = (@softs, $line);
             }
         }
+        close(FILE);
+
+        if (@softs) {
+            pkg [ @softs ], ensure => "present";
+        }
     }
+
+    file "/usr/bin/nsenter",
+        source => "files/bin/nsenter.x86_64",
+        owner  => "root",
+        group  => "root",
+        mode   => 755,
+        no_overwrite => TRUE; 
 }
 

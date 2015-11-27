@@ -3,3 +3,6 @@ ufw
 iptables
 wget
 curl
+fuse
+lvm2
+util-linux
