@@ -59,7 +59,7 @@ sub initx {
     my ($vol, $dir, $file) = File::Spec->splitpath($path);
 
     my $hosts = "/tmp/hosts.extra";
-    system "sh $dir/genhosts.sh $hosts";
+    system "sh $dir/modules/genhosts.sh $hosts";
 
     open(FILE, "<", $hosts) || die "cannot open: $!\n";
     while ($line = <FILE>){
@@ -106,6 +106,7 @@ desc <<END;
 custom task with --by=run|scp, e.g,
     --by=run --cmd="",
     --by=scp --src="" --dst="",
+    --by=sh --script="" --func="",
 export RUSER=.. with real user, default '$ruser'.
 export RPASS=.. with sudo password, it will activate sudo.
 export RPASS= will deactivate sudo.
@@ -116,7 +117,9 @@ task "custom", sub {
     my $by = $params->{by};
     if ($by eq "run") {
         my $cmd = $params->{cmd};
-        say run "$cmd";
+        if ($cmd) {
+            say run "$cmd";
+        }
     }elsif($by eq "scp") {
         my $src = $params->{src};
         my $dst = $params->{dst};
@@ -125,6 +128,17 @@ task "custom", sub {
         }
         if ($src) {
             upload $src, $dst;
+        }
+    }elsif($by eq "sh") {
+        my $script = $params->{script};
+        my $func = $params->{func};
+        if ($script) {
+            open(FILE, "<", $script) || die "cannot open: $!\n";
+            my @content = <FILE>;
+            close(FILE);
+            if (@content) {
+                say run "@content $func";
+            }
         }
     }
 };
