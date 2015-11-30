@@ -6,12 +6,9 @@ _is_started() {
 }
 
 do_start() {
+    docker pull $image:latest;
     docker images | grep "$image" >/dev/null 2>&1;
-    if [ $? -ne 0 ]; then
-        docker pull $image:latest;
-        docker images | grep "$image" >/dev/null 2>&1;
-        [ $? -ne 0 ] && echo "[ERROR] failed to pull $image!" && exit 1;
-    fi
+    [ $? -ne 0 ] && echo "[ERROR] failed to pull $image!" && exit 1;
 
     _is_started;
     if [ $? -ne 0 ]; then
