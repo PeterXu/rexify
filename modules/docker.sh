@@ -23,6 +23,6 @@ do_stop() {
 }
 
 do_restart() {
-    docker ps --filter="name=$cname" | grep $cname && docker restart $cname;
+    docker ps -a --filter="name=$cname" | grep $cname && docker restart $cname;
 }
 

@@ -36,7 +36,7 @@ sub checkx() {
         }
     }
     if ($sure ne "y") {
-        print RED "[WARN] sudo deactivated!\n";
+        print RED "[WARN] sudo [[deactivated]]!\n";
     }
 
     print BOLD YELLOW "\n[WARN] continue?(y/n [y]):";
@@ -174,7 +174,7 @@ END
     $cmdstr = <<END; 
     key="custom hosts begin"; extra="/tmp/hosts.extra";
     cat /etc/hosts | grep "\$key" >/dev/null 2>&1 || cat \$extra >> /etc/hosts;
-    rm -f /tmp/hosts.extra;
+    #rm -f /tmp/hosts.extra;
 END
     say run $cmdstr;
 };
