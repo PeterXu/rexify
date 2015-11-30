@@ -1,14 +1,24 @@
 #!/usr/bin/env bash
 
+kind="dfs"
+[ "$LOCAL" = "1" ] && kind="local"
+
+
 volname="dist_replica_vol"
-voldata="/mnt/${volname}_data"
+if [ "$kind" = "dfs"]; then
+    voldata="/mnt/${volname}_data"
+else
+    voldata="/mnt/${volname}_local"
+fi
 
 do_prepare() {
     apt-get install -y sysstat
 
     mkdir -p $voldata
-    umount $voldata
-    /var/lib/glusterfs/rootfs/sbin/mount.glusterfs bogon3:/$volname $voldata
+    if [ "$kind" = "dfs" ]; then
+        umount $voldata
+        /var/lib/glusterfs/rootfs/sbin/mount.glusterfs bogon3:/$volname $voldata
+    fi
 }
 
 do_test1() {
