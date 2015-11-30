@@ -17,18 +17,14 @@ do_start() {
     if [ $? -ne 0 ]; then
         _is_started "-a" && docker rm $cname;
 
-        opts="--name=$cname --net=host";
+        opts="--name=$cname --net=host --privileged=true";
         opts="$opts -v /var/log/glusterfs:/var/lib/glusterfs/var/log/glusterfs";
         opts="$opts -v /mnt/brick1:/mnt/brick1";
         docker run -d $opts $image:latest;
 
         _is_started;
         [ $? -ne 0 ] && echo "[ERROR] fail to run $cname!" && exit 1;
-
-        dpath="dist_replica1 stripe_replica1 dist_stripe_replica1";
-        for p in $dpath; do
-            docker exec $cname mkdir -p /mnt/brick1/$p;
-        done
+        echo "[INFO] $cname started success!";
     else
         echo "[WARN] $cname has been started!";
     fi
@@ -39,7 +35,7 @@ do_stop() {
         docker stop $cname;
         echo "[INFO] $cname stopped success!";
     else
-        echo "[WARN] $cname not running/existed!";
+        echo "[WARN] $cname not running!";
     fi
 }
 do_restart() {
@@ -56,4 +52,20 @@ do_check() {
     [ $? -ne 0 ] && echo "[WARN] $image not existed!" && exit 1;
     _is_started && echo "[INFO] $cname running!" || echo "[WARN] $cname not started!";
 }
+do_probe() {
+    _is_started;
+    if [ $? -ne 0 ]; then
+        echo "[ERROR] $cname not running!";
+        exit 1;
+    fi
+    
+    local nodes="$*";
+    for node in $nodes; do
+        echo "[*$node*]=>  ";
+        docker exec $cname /var/lib/glusterfs/sbin/gluster peer probe $node;
+        printf "\t";
+    done
+    #docker exec $cname /var/lib/glusterfs/sbin/gluster peer status;
+}
+
 
