@@ -5,7 +5,7 @@ kind="dfs"
 
 
 volname="dist_replica_vol"
-if [ "$kind" = "dfs"]; then
+if [ "$kind" = "dfs" ]; then
     voldata="/mnt/${volname}_data"
 else
     voldata="/mnt/${volname}_local"
@@ -45,10 +45,20 @@ do_test3() {
     dd if=/dev/zero of=$small bs=38K count=1
     sleep 2
 
-    for((i=1;i<=1024;i++)); do
+    time for i in `seq 1 1024`; do
         dd if=$small of=$voldata/hello.$i bs=4k count=10 
-        echo "hello.$i was created"
     done
+    sleep 5
+
+    time for i in `seq 1 5000`; do
+        dd if=$small of=$voldata/hello.$i bs=4k count=10 
+    done
+    sleep 5
+
+    time for i in `seq 1 10000`; do
+        dd if=$small of=$voldata/hello.$i bs=4k count=10 
+    done
+    sleep 2
 }
 
 
