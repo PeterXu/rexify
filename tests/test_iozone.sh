@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+mount="/var/lib/glusterfs/rootfs/sbin/mount.glusterfs"
 kind="dfs"
 [ "$LOCAL" = "1" ] && kind="local"
 
@@ -17,8 +18,8 @@ do_prepare() {
 
     mkdir -p $voldata
     if [ "$kind" = "dfs" ]; then
-        umount $voldata
-        /var/lib/glusterfs/rootfs/sbin/mount.glusterfs bogon3:/$volname $voldata
+        (umount $voldata)
+        $mount bogon3:/$volname $voldata
     fi
 }
 
