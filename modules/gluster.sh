@@ -1,70 +1,100 @@
-cname="glusterfs";
+cname="glusterfs";      # exec container name
+dname="${cname}_data";  # data container name
 image="xdocker.host:5000/glusterfs";
 
-_is_started() {
-    docker ps $* --filter="name=$cname" | grep $cname >/dev/null 2>&1;
+
+_check0_exit() {
+    local err=$?; [ $err -eq 0 ] && echo "$*" && exit 0;
+}
+_check1_exit() {
+    local err=$?; [ $err -ne 0 ] && echo "$*" && exit 1;
+}
+_is_exist() { # check container
+    local name="$1"; shift;
+    docker ps $* --filter="name=$name" | grep "$name" >/dev/null 2>&1;
+}
+_image_exist() { # pull and check image
+    docker images | grep "$image" >/dev/null 2>&1;
+}
+_data_container() { # data container
+    _is_exist "$dname" "-a" && return 0;
+
+    local opts="--name=${dname}";
+    opts="$opts -v /var/log/glusterfs:/var/lib/glusterfs/var/log/glusterfs";   # persistence
+    opts="$opts -v /var/lib/glusterd:/var/lib/glusterfs/var/lib/glusterd";    # persistence
+    opts="$opts -v /mnt/brick1:/mnt/brick1";                # use real volume
+    docker run $opts $image:latest echo;                    # just start once.
+
+    _is_exist "$dname" "-a";
 }
 
-do_start() {
+do_pre() {
     docker pull $image:latest;
-    docker images | grep "$image" >/dev/null 2>&1;
-    [ $? -ne 0 ] && echo "[ERROR] failed to pull $image!" && exit 1;
+    _image_exist;
+    _check1_exit "[ERROR] no image => $image!";
+}
+do_start() {
+    _image_exist;
+    _check1_exit "[ERROR] no image => $image!";
 
-    _is_started;
-    if [ $? -ne 0 ]; then
-        _is_started "-a" && docker rm $cname;
+    _data_container;
+    _check1_exit "[ERROR] fail to create data container => $dname!";
 
-        opts="--name=$cname --net=host --privileged=true";
-        opts="$opts -v /var/log/glusterfs:/var/lib/glusterfs/var/log/glusterfs";
-        opts="$opts -v /var/lib/glusterd:/var/lib/glusterfs/var/lib/glusterd";
-        opts="$opts -v /var/run/gluster:/var/lib/glusterfs/var/run/gluster";
-        opts="$opts -v /mnt/brick1:/mnt/brick1";
-        docker run -d $opts $image:latest;
+    _is_exist "$cname";
+    _check0_exit "[WARN] $cname has been started!";
 
-        _is_started;
-        [ $? -ne 0 ] && echo "[ERROR] fail to run $cname!" && exit 1;
-        echo "[INFO] $cname started success!";
-    else
-        echo "[WARN] $cname has been started!";
-    fi
+    _is_exist "$cname" "-a" && docker rm $cname;
+
+    local opts="--name=$cname --net=host --privileged=true";
+    opts="$opts --volumes-from $dname"
+    docker run -d $opts $image:latest;
+
+    _is_exist "$cname" && echo "[INFO] $cname started success!" || echo "[ERROR] fail to run $cname!";
 }
 do_stop() {
-    _is_started;
-    if [ $? -eq 0 ]; then
-        docker stop $cname;
-        echo "[INFO] $cname stopped success!";
-    else
-        echo "[WARN] $cname not running!";
-    fi
+    _is_exist "$cname";
+    _check1_exit "[WARN] $cname not running!";
+
+    docker stop $cname;
+    echo "[INFO] $cname stopped success!";
 }
 do_restart() {
-    _is_started "-a";
+    _is_exist "$cname" "-a";
+    _check1_exit "[WARN] $cname not existed!";
+
+    docker restart $cname;
+    echo "[INFO] $cname restarted success!";
+}
+do_clean() {
+    do_stop;
+    _is_exist "$cname" "-a" && docker rm $cname;
+    _is_exist "$dname" "-a" && docker rm $dname;
+}
+do_status() {
+    _is_exist "$cname";
     if [ $? -eq 0 ]; then
-        docker restart $cname;
-        echo "[INFO] $cname restarted success!";
+        echo "[INFO] $cname running!";
     else
-        echo "[WARN] $cname not existed!";
+        _is_exist "$cname" "-a";
+        if [ $? -eq 0 ]; then
+            echo "[WARN] $cname not started!";
+        else
+            echo "[WARN] $cname not created!";
+        fi
     fi
 }
-do_check() {
-    docker images | grep "$image" >/dev/null 2>&1;
-    [ $? -ne 0 ] && echo "[WARN] $image not existed!" && exit 1;
-    _is_started && echo "[INFO] $cname running!" || echo "[WARN] $cname not started!";
-}
+
+# for gluster operation
 do_probe() {
-    _is_started;
-    if [ $? -ne 0 ]; then
-        echo "[ERROR] $cname not running!";
-        exit 1;
-    fi
+    _is_exist "$cname";
+    _check1_exit "[ERROR] $cname not running!";
     
     local nodes="$*";
     for node in $nodes; do
         echo "[*$node*]=>  ";
-        docker exec $cname /var/lib/glusterfs/sbin/gluster peer probe $node;
+        docker exec $cname gluster peer probe $node;
         printf "\t";
     done
-    #docker exec $cname /var/lib/glusterfs/sbin/gluster peer status;
+    #docker exec $cname gluster peer status;
 }
-
 
