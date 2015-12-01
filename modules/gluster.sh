@@ -16,6 +16,8 @@ do_start() {
 
         opts="--name=$cname --net=host --privileged=true";
         opts="$opts -v /var/log/glusterfs:/var/lib/glusterfs/var/log/glusterfs";
+        opts="$opts -v /var/lib/glusterd:/var/lib/glusterfs/var/lib/glusterd";
+        opts="$opts -v /var/run/gluster:/var/lib/glusterfs/var/run/gluster";
         opts="$opts -v /mnt/brick1:/mnt/brick1";
         docker run -d $opts $image:latest;
 

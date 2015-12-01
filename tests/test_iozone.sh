@@ -25,6 +25,8 @@ do_prepare() {
 
 # disk cache
 do_test1() {
+    [ ! -d $voldata ] && exit 1
+
     local result="/tmp/iozone_test1_dist_replica_rw_xls.xls"
     local log="/tmp/iozone_test1_dist_replica_rw_log.xls"
     local tfile="$voldata/iozonetest"
@@ -33,6 +35,8 @@ do_test1() {
 
 # no disk cache: -I
 do_test2() {
+    [ ! -d $voldata ] && exit 1
+
     local result="/tmp/iozone_test2_dist_replica_rw_xls.xls"
     local log="/tmp/iozone_test2_dist_replica_rw_log.xls"
     local tfile="$voldata/iozonetest"
@@ -41,6 +45,8 @@ do_test2() {
 
 # small files
 do_test3() {
+    [ ! -d $voldata ] && exit 1
+
     local small="/tmp/file38k.txt"
     dd if=/dev/zero of=$small bs=38K count=1
     sleep 2
@@ -67,7 +73,7 @@ case "$1" in
     prepare) do_prepare;;
     test1) do_test1;;
     test2) do_test2;;
-    test3) do_test3;;
+    test3) do_test3 >/tmp/iozone_test3_log.txt 2>&1;;
     *) echo "usage: $0 prepare|test1|test2";;
 esac
 
