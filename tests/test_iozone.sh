@@ -24,25 +24,41 @@ do_prepare() {
 }
 
 
-# disk cache
-do_test1() {
+# disk cache: big file
+_test() {
     [ ! -d $voldata ] && exit 1
 
-    local result="/tmp/iozone_test1_dist_replica_rw_xls.xls"
-    local log="/tmp/iozone_test1_dist_replica_rw_log.xls"
+    local idx="$1";
+    local min="$2"; # 128m
+    local max="$3"; # 1G
+    local opt="$4";
+
+    local res="/tmp/iozone_test${idx}_dist_replica_rw_xls.xls"
+    local log="/tmp/iozone_test${idx}_dist_replica_rw_log.xls"
     local tfile="$voldata/iozonetest"
-    iozone -Rb $result -n 128m -g 1G -i 0 -i 1 -i 2 -r 4K -r 16K -r 64K -r 128K -f $tfile | tee $log &
+    
+    iozone -Rb $res -n $min -g $max -i 0 -i 1 -i 2 -r 4K -r 16K -r 64K -r 128K $opt -f $tfile | tee $log &
 }
 
-# no disk cache: -I
-do_test2() {
-    [ ! -d $voldata ] && exit 1
-
-    local result="/tmp/iozone_test2_dist_replica_rw_xls.xls"
-    local log="/tmp/iozone_test2_dist_replica_rw_log.xls"
-    local tfile="$voldata/iozonetest"
-    iozone -Rb $result -n 128m -g 1G -i 0 -i 1 -i 2 -r 4K -r 16K -r 64K -r 128K -I -f $tfile | tee $log &
+do_test1() { # disk cache : big file
+    _test "1" "128m" "1g" "";
 }
+do_test11() {
+    _test "11" "4k" "1m" "";
+}
+do_test12() {
+    _test "12" "2m" "32m" "";
+}
+do_test2() { # no disk cache: big file
+    _test "2" "128m" "1G" "-I";
+}
+do_test21() { # no disk cache: small file
+    _test "21" "4k" "1m" "-I";
+}
+do_test22() { # no disk cache: small file
+    _test "22" "2m" "32m" "-I";
+}
+
 
 # small files
 do_test3() {
@@ -72,10 +88,10 @@ do_test3() {
 
 case "$1" in
     prepare) do_prepare;;
-    test1) do_test1;;
-    test2) do_test2;;
+    test1|test11|test12) do_$1;;
+    test2|test21|test22) do_$1;;
     test3) do_test3 >/tmp/iozone_test3_log.txt 2>&1;;
-    *) echo "usage: $0 prepare|test1|test2";;
+    *) echo "usage: $0 prepare | test1|test11|test12 | test2|test21|test22";;
 esac
 
 exit 0
