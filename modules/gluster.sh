@@ -1,6 +1,6 @@
 cname="glusterfs";      # exec container name
 dname="${cname}_data";  # data container name
-image="xdocker.host:5000/glusterfs";
+image="xdocker.host/glusterfs";
 
 
 _check0_exit() {
