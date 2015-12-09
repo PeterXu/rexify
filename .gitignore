@@ -1,2 +1,4 @@
 server.ini
 Rexfile.lock
+*.ini
+*.txt

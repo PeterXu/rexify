@@ -2,6 +2,8 @@ $ruser = "peter";
 $rpass = $ENV{RPASS};
 $rlog  = "/tmp/rex.log";
 
+$hosts_ = "/tmp/hosts.extra";
+
 $tuser = $ENV{RUSER};
 if ($tuser) {
     $ruser = $tuser;
@@ -22,7 +24,7 @@ timeout 2; # ssh timeout
 
 ## check sudo
 &checkx;
-sub checkx() {
+sub checkx {
     use Term::ANSIColor qw(:constants);
     $Term::ANSIColor::AUTORESET = 1;
     my $sure;
@@ -48,47 +50,43 @@ sub checkx() {
     }
 }
 
-
-## init groups
-@groups_all = ();
 &initx;
-group zzzgroups_ => (@groups_all);
 sub initx {
-    use File::Spec;
-    my $path = File::Spec->rel2abs(__FILE__);
-    my ($vol, $dir, $file) = File::Spec->splitpath($path);
+    # config /etc/hosts
+    my $key1 = "## custom hosts begin\n";
+    my $key2 = "## custom hosts end\n";
+    open( my $HOSTS, ">", "$hosts_" ) || die "Can't open $hosts_: $!\n";
+    print $HOSTS $key1;
 
-    my $hosts = "/tmp/hosts.extra";
-    system "sh $dir/modules/genhosts.sh $hosts";
-
-    open(FILE, "<", $hosts) || die "cannot open: $!\n";
-    while ($line = <FILE>){
-        if ($line =~ /^\d/) {
-            chomp($line);
-            my @names = split(/ +/, $line);
-            my $len = @names;
-            if ($len == 2) {
-                my $key = $names[0];
-                my $val = $names[1];
-                @groups_all = (@groups_all, $val);
-                group $val => $key;
-            }
-        }elsif ($line =~ /^#-/){
-            chomp($line);
-            $line = substr($line, 2, length($line));
-            my @names = split(/=/, $line);
-            my $len = @names;
-            if ($len == 2) {
-                $key = $names[0];
-                $val = $names[1];
-                $key =~ s/(^ +| +$)//g; 
-                $val =~ s/(^ +| +$)//g; 
-                my @vals = split(/,/, $val);
-                group $key => (@vals);
+    # parse server.ini
+    use Config::IniFiles;
+    my $file = "etc/server.ini";
+    my $ini = Config::IniFiles->new(-file => $file);
+    my @groups = ();
+    foreach my $sec ($ini->Sections) {
+        foreach my $key ($ini->Parameters($sec)) {
+            my $val = $ini->val($sec, $key);
+            chomp $sec; 
+            chomp $key; 
+            chomp $val;
+            if ($key eq "host") {
+                if ($sec !~ /^@/) {
+                    print $HOSTS "$val    $sec\n";
+                    group $sec => $val;
+                    @groups = (@groups, $sec);
+                }elsif ($sec =~ /^@/) {
+                    $sec =~ s/^.//;
+                    group $sec => $val;
+                    print $HOSTS "#-$sec = $val\n";
+                }
             }
         }
     }
-    close(FILE);
+
+    print $HOSTS $key2;
+    close($HOSTS);
+
+    group "zzzgroups" => (@groups);
 }
 
 
@@ -162,7 +160,8 @@ END
 ## task /etc/hosts
 desc "set /etc/hosts";
 task "prepare_hosts", sub {
-    upload "/tmp/hosts.extra", "/tmp/hosts.extra";
+    my $rhosts = "/tmp/hosts.extra";
+    upload $hosts_, $rhosts;
 
     # clear previous
     my $cmdstr = <<END;
@@ -172,9 +171,8 @@ END
 
     # set latest
     $cmdstr = <<END; 
-    key="custom hosts begin"; extra="/tmp/hosts.extra";
-    cat /etc/hosts | grep "\$key" >/dev/null 2>&1 || cat \$extra >> /etc/hosts;
-    #rm -f /tmp/hosts.extra;
+    key="custom hosts begin"; extra="$rhosts";
+    cat /etc/hosts | grep "\$key" >/dev/null 2>&1 || cat \$extra >> /etc/hosts; rm -f \$extra;
 END
     say run $cmdstr;
 };
@@ -270,4 +268,5 @@ task "prepare_softs", sub {
         mode   => 755,
         no_overwrite => TRUE; 
 }
+
 
