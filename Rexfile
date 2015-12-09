@@ -3,6 +3,8 @@ $rpass = $ENV{RPASS};
 $rlog  = "/tmp/rex.log";
 
 $hosts_ = "/tmp/hosts.extra";
+$hosts0_ = "## custom hosts begin";
+$hosts1_ = "## custom hosts end";
 
 $tuser = $ENV{RUSER};
 if ($tuser) {
@@ -53,10 +55,8 @@ sub checkx {
 &initx;
 sub initx {
     # config /etc/hosts
-    my $key1 = "## custom hosts begin\n";
-    my $key2 = "## custom hosts end\n";
     open( my $HOSTS, ">", "$hosts_" ) || die "Can't open $hosts_: $!\n";
-    print $HOSTS $key1;
+    print $HOSTS "$hosts0_\n";
 
     # parse server.ini
     use Config::IniFiles;
@@ -83,7 +83,7 @@ sub initx {
         }
     }
 
-    print $HOSTS $key2;
+    print $HOSTS "$hosts1_\n";
     close($HOSTS);
 
     group "zzzgroups" => (@groups);
@@ -144,7 +144,7 @@ task "custom", sub {
 
 ## task ssh
 desc "set ssh public key";
-task "prepare_ssh", sub {
+task "prep_ssh", sub {
     upload "~/.ssh/id_rsa.pub", "/tmp";
 
     my $cmdstr = <<END;
@@ -158,20 +158,25 @@ END
 
 
 ## task /etc/hosts
-desc "set /etc/hosts";
-task "prepare_hosts", sub {
-    my $rhosts = "/tmp/hosts.extra";
-    upload $hosts_, $rhosts;
+desc "set /etc/hosts: --clean=yes";
+task "prep_hosts", sub {
+    my $params = shift;
+    my $clean = $params->{clean};
 
     # clear previous
     my $cmdstr = <<END;
-    sed -in /"## custom hosts begin"/,/"## custom hosts end"/d /etc/hosts;
+    sed -in /"$hosts0_"/,/"$hosts1_"/d /etc/hosts;
 END
     say run $cmdstr;
+    if ($clean eq "yes") {
+        return;
+    }
 
     # set latest
+    my $rhosts = "/tmp/hosts.extra";
+    upload $hosts_, $rhosts;
     $cmdstr = <<END; 
-    key="custom hosts begin"; extra="$rhosts";
+    key="$hosts0_"; extra="$rhosts";
     cat /etc/hosts | grep "\$key" >/dev/null 2>&1 || cat \$extra >> /etc/hosts; rm -f \$extra;
 END
     say run $cmdstr;
@@ -180,7 +185,7 @@ END
 
 ## task apt-get
 desc "config apt";
-task prepare_apt, sub {
+task prep_apt, sub {
     my $changed = 0;
     file "/etc/apt/sources.list.d/docker.list",
         source => "files/apt/docker.list",
@@ -209,39 +214,35 @@ task prepare_apt, sub {
 
 
 ## task docker
-desc "config docker";
-task "prepare_docker", sub {
+desc "config docker: --reload=yes|no, default no";
+task "prep_docker", sub {
     # another way
     # wget -qO- https://get.docker.com/gpg | sudo apt-key add -
     # wget -qO- https://get.docker.com/ | sh
+    
+    my $params = shift;
+    my $reload = $params->{reload};
 
-    my $updated = 0;
     #run "apt-get update";
     pkg "docker-engine", 
         ensure => "present",
         on_change => sub { 
-            $updated = 1;
+            $reload = "yes";
+            say run "usermod -aG docker $ruser";
         };
 
     upload "files/etc/docker", "/etc/default/docker";
     upload "files/etc/docker.service", "/lib/systemd/system/docker.service";
 
-    say run "usermod -aG docker $ruser";
-    if ($updated == 1) {
+    if ($reload eq "yes") {
         service docker => "restart";
     }
 };
 
 
-## task base soft
-desc "config base soft";
-task "prepare_base", sub {
-    run "apt-get update";
-    pkg [ qw/ufw iptables vim curl wget/ ], ensure => "present";
-};
-
-desc "install from config: --conf=etc/base.txt";
-task "prepare_softs", sub {
+## task softs
+desc "install from: --conf=etc/base.txt";
+task "prep_softs", sub {
     my $params = shift;
     my $conf = $params->{conf};
     if ($conf) {
@@ -257,6 +258,7 @@ task "prepare_softs", sub {
         close(FILE);
 
         if (@softs) {
+            # pkg [ qw/ufw iptables vim curl wget/ ], ensure => "present";
             pkg [ @softs ], ensure => "present";
         }
     }
