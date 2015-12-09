@@ -228,8 +228,8 @@ task "prepare_docker", sub {
     upload "files/etc/docker", "/etc/default/docker";
     upload "files/etc/docker.service", "/lib/systemd/system/docker.service";
 
+    say run "usermod -aG docker $ruser";
     if ($updated == 1) {
-        say run "usermod -aG docker $ruser";
         service docker => "restart";
     }
 };
