@@ -11,7 +11,7 @@ _check1_exit() {
 }
 _is_exist() { # check container
     local name="$1"; shift;
-    docker ps $* --filter="name=$name" | grep "$name" >/dev/null 2>&1;
+    docker ps $* --format "{{.Names}}" | grep "^$name$" >/dev/null 2>&1;
 }
 _image_exist() { # pull and check image
     docker images | grep "$image" >/dev/null 2>&1;
@@ -59,6 +59,7 @@ do_stop() {
     echo "[INFO] $cname stopped success!";
 }
 do_restart() {
+    _is_exist "$cname" && return 0;
     _is_exist "$cname" "-a";
     _check1_exit "[WARN] $cname not existed!";
 
@@ -66,7 +67,7 @@ do_restart() {
     echo "[INFO] $cname restarted success!";
 }
 do_clean() {
-    do_stop;
+    (do_stop);
     _is_exist "$cname" "-a" && docker rm $cname;
     _is_exist "$dname" "-a" && docker rm $dname;
 }
