@@ -1,14 +1,17 @@
 $ruser = "peter";
 $rpass = $ENV{RPASS};
 $rlog  = "/tmp/rex.log";
+$rini = "etc/server.ini";
 
 $hosts_ = "/tmp/hosts.extra";
 $hosts0_ = "## custom hosts begin";
 $hosts1_ = "## custom hosts end";
 
-$tuser = $ENV{RUSER};
-if ($tuser) {
-    $ruser = $tuser;
+if ($ENV{RUSER}) {
+    $ruser = $ENV{RUSER};
+}
+if ($ENV{RINI}) {
+    $rini = $ENV{RINI};
 }
 
 user "$ruser";
@@ -29,9 +32,11 @@ timeout 2; # ssh timeout
 sub checkx {
     use Term::ANSIColor qw(:constants);
     $Term::ANSIColor::AUTORESET = 1;
+    print BOLD "[INFO] you can activate sudo by RPASS=passwd or 'rex -s -S passwd'\n";
+
     my $sure;
     if ($rpass) {
-        print BOLD YELLOW "\n[WARN] sudo activate?(y/n [n]):";
+        print BOLD YELLOW "\n[WARN] sudo(RPASS) activate?(y/n [n]):";
         $sure = <STDIN>;
         chomp($sure);
         if ($sure eq "y") {
@@ -40,7 +45,7 @@ sub checkx {
         }
     }
     if ($sure ne "y") {
-        print RED "[WARN] sudo [[deactivated]]!\n";
+        print RED "[WARN] sudo(RPASS) [[deactivated]]!\n";
     }
 
     print BOLD YELLOW "\n[WARN] continue?(y/n [y]):";
@@ -60,8 +65,7 @@ sub initx {
 
     # parse server.ini
     use Config::IniFiles;
-    my $file = "etc/server.ini";
-    my $ini = Config::IniFiles->new(-file => $file);
+    my $ini = Config::IniFiles->new(-file => $rini) || exit 0;
     my @groups = ();
     foreach my $sec ($ini->Sections) {
         foreach my $key ($ini->Parameters($sec)) {
@@ -76,7 +80,14 @@ sub initx {
                     @groups = (@groups, $sec);
                 }elsif ($sec =~ /^@/) {
                     $sec =~ s/^.//;
-                    group $sec => $val;
+                    my @nodes=();
+                    my @vals = split(/,/, $val);
+                    foreach my $node (@vals) {
+                        chomp $node; 
+                        $node =~ s/(^\s+|\s+$)//g;
+                        @nodes = (@nodes, $node);
+                    }
+                    group $sec => (@nodes); 
                     print $HOSTS "#-$sec = $val\n";
                 }
             }
@@ -250,7 +261,7 @@ task "prep_softs", sub {
         open(FILE, "<", $conf) || die "cannot open: $!\n";
         while ($line = <FILE>){
             chomp($line);
-            $line =~ s/(^ +| +$)//g; 
+            $line =~ s/(^\s+|\s+$)//g; 
             if ($line !~ /^#/){
                 @softs = (@softs, $line);
             }
