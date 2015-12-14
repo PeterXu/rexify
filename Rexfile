@@ -22,9 +22,8 @@ public_key "~/.ssh/id_rsa.pub";
 key_auth;
 
 logging to_file => "$rlog";
-#logging to_syslog => "local0";
+#logging to_syslog => "rexify";
 timeout 2; # ssh timeout
-#parallelism 2;
 
 
 ## check sudo
@@ -33,6 +32,7 @@ sub checkx {
     use Term::ANSIColor qw(:constants);
     $Term::ANSIColor::AUTORESET = 1;
     print BOLD "[INFO] you can activate sudo by RPASS=passwd or 'rex -s -S passwd'\n";
+    print BOLD "[INFO] use config <$rini>\n";
 
     my $sure;
     if ($rpass) {
@@ -59,45 +59,30 @@ sub checkx {
 
 &initx;
 sub initx {
+    use Rex::Group::Lookup::INI;
+    groups_file $rini;
+
     # config /etc/hosts
     open( my $HOSTS, ">", "$hosts_" ) || die "Can't open $hosts_: $!\n";
     print $HOSTS "$hosts0_\n";
 
-    # parse server.ini
-    use Config::IniFiles;
-    my $ini = Config::IniFiles->new(-file => $rini) || exit 0;
-    my @groups = ();
-    foreach my $sec ($ini->Sections) {
-        foreach my $key ($ini->Parameters($sec)) {
-            my $val = $ini->val($sec, $key);
-            chomp $sec; 
-            chomp $key; 
-            chomp $val;
-            if ($key eq "host") {
-                if ($sec !~ /^@/) {
-                    print $HOSTS "$val    $sec\n";
-                    group $sec => $val;
-                    @groups = (@groups, $sec);
-                }elsif ($sec =~ /^@/) {
-                    $sec =~ s/^.//;
-                    my @nodes=();
-                    my @vals = split(/,/, $val);
-                    foreach my $node (@vals) {
-                        chomp $node; 
-                        $node =~ s/(^\s+|\s+$)//g;
-                        @nodes = (@nodes, $node);
-                    }
-                    group $sec => (@nodes); 
-                    print $HOSTS "#-$sec = $val\n";
-                }
-            }
+    my @zgroups = ();
+    my %groups = Rex::Group->get_groups;
+    foreach my $grp (keys %groups) {
+        my @val = @{$groups{$grp}};
+        chomp $grp;
+        $grp =~ s/(^\s+|\s+$)//g;
+        if ($grp !~ /^@/) {
+            print $HOSTS "@val    $grp\n";
+            @zgroups = (@zgroups, $grp);
+        }else {
+            #print $HOSTS "#-$grp = @val\n";
         }
     }
 
     print $HOSTS "$hosts1_\n";
     close($HOSTS);
-
-    group "zzzgroups" => (@groups);
+    group "zzzgroups" => (@zgroups);
 }
 
 
