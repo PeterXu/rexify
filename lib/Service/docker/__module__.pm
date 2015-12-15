@@ -2,7 +2,7 @@ package Service::docker;
 
 use Rex -base;
 
-desc "config docker: --reload=yes|no, default no";
+desc "config docker: --reload=yes|no|all, default no";
 task "prepare", sub {
     # another way
     # wget -qO- https://get.docker.com/gpg | sudo apt-key add -
@@ -12,7 +12,23 @@ task "prepare", sub {
     my $reload = $params->{reload};
     my $ruser = $ENV{RUSER};
 
-    #run "apt-get update";
+    file "/etc/apt/sources.list.d/docker.list",
+        source => "files/apt/docker.list",
+        owner  => "root",
+        group  => "root",
+        mode   => 644,
+        on_change => sub {
+            $reload = "all";
+        };
+
+    if ($reload eq "all") {
+        #my $cmdstr = "apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D";
+        #say run $cmdstr;
+        upload "files/apt/docker-trusted.gpg", "/etc/apt/trusted.gpg";
+        $reload = "yes";
+        run "apt-get update";
+    }
+
     pkg "docker-engine", 
         ensure => "present",
         on_change => sub { 

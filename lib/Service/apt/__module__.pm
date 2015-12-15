@@ -2,30 +2,21 @@ package Service::apt;
 
 use Rex -base;
 
-desc "config apt source";
+desc "config apt source: --reload=yes|no, default no";
 task "prepare", sub {
-    my $changed = 0;
+    my $params = shift;
+    my $reload = $params->{reload};
+
     file "/etc/apt/sources.list",
         source => "files/apt/sources.list",
         owner  => "root",
         group  => "root",
         mode   => 644,
         on_change => sub {
-            $changed = 1;
+            $reload = "yes";
         };
 
-    file "/etc/apt/sources.list.d/docker.list",
-        source => "files/apt/docker.list",
-        owner  => "root",
-        group  => "root",
-        mode   => 644,
-        on_change => sub {
-            my $cmdstr = "apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D";
-            say run $cmdstr;
-            $changed = 1;
-        };
-
-    if ($changed == 1) {
+    if ($reload eq "yes") {
         say run "apt-get update";
     }
 };
