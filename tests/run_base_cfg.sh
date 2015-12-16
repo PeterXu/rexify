@@ -16,7 +16,7 @@ rex -G $grp Service:apt:prepare
 
 echo "=========================="
 echo "[docker]"
-rex -G $grp Service:docker:prepare
+rex -G $grp Service:docker:prepare --reload=all
 
 echo "=========================="
 echo "[pip]"
@@ -25,7 +25,7 @@ rex -G $grp Service:pip:prepare
 
 echo "=========================="
 echo "[pull dockerfile]"
-cmd="git clone https://github.com/peterxu/docker.git ~/docker"
+cmd="git clone https://github.com/peterxu/docker.git ~/.dockerfile"
 rex -G $grp Service:manual:custom --by=run --cmd="$cmd"
 
 echo "=========================="

@@ -74,7 +74,7 @@ sub initx {
         chomp $grp;
         $grp =~ s/(^\s+|\s+$)//g;
         if ($grp !~ /^@/) {
-            print $HOSTS "@val    $grp\n";
+            print $HOSTS "@val\t\t$grp\n";
             @zgroups = (@zgroups, $grp);
         }else {
             #print $HOSTS "#-$grp = @val\n";
