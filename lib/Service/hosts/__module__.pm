@@ -3,7 +3,7 @@ package Service::hosts;
 use Rex -base;
 
 desc "set /etc/hosts: --cleanonly=yes";
-task "prepare", sub {
+task "do", sub {
     my $params = shift;
     my $clean = $params->{cleanonly};
 

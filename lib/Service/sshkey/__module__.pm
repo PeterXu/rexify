@@ -3,7 +3,7 @@ package Service::sshkey;
 use Rex -base;
 
 desc "config ssh public key";
-task "prepare", sub {
+task "do", sub {
     upload "~/.ssh/id_rsa.pub", "/tmp";
 
     my $cmdstr = <<END;

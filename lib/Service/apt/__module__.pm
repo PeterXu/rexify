@@ -3,7 +3,7 @@ package Service::apt;
 use Rex -base;
 
 desc "config apt source: --reload=yes|no, default no";
-task "prepare", sub {
+task "do", sub {
     my $params = shift;
     my $reload = $params->{reload};
 

@@ -14,7 +14,7 @@ export RPASS=.. with sudo password, it will activate sudo.
 export RPASS= will deactivate sudo.
 ...
 END
-task "custom", sub {
+task "do", sub {
     my $params = shift;
     my $by = $params->{by};
     if ($by eq "run") {

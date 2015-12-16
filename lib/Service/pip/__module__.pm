@@ -3,7 +3,7 @@ package Service::pip;
 use Rex -base;
 
 desc "config pip.conf with custom index-url";
-task prepare => sub {
+task "do", sub {
     my $ruser = $ENV{RUSER};
     file "~/.pip/pip.conf", 
         source => "files/etc/pip.conf",

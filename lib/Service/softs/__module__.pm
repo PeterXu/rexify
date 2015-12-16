@@ -3,7 +3,7 @@ package Service::softs;
 use Rex -base;
 
 desc "install softs from: --conf=etc/base.txt";
-task install => sub {
+task "do", sub {
     my $params = shift;
     my $conf = $params->{conf};
     if ($conf) {

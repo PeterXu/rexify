@@ -3,17 +3,17 @@ rex: management for server
 
 step 1
 ------
-    >Service:sshkey:prepare     => config ssh public key
+    >Service:sshkey:do     => config ssh public key
     >
-    >Service:apt:prepare        => config apt source and docker source
+    >Service:apt:do        => config apt source and docker source
     >
-    >Service:docker:prepare     => install docker and config docker
+    >Service:docker:do     => install docker and config docker
     >
-    >Service:pip:prepare         => install pip and config pip
+    >Service:pip:do        => install pip and config pip
     >
-    >Service:hosts:prepare       => config /etc/hosts
+    >Service:hosts:do      => config /etc/hosts
 
 step 2
 ------
-    Service:softs:install
-    Service:manual:custom
+    Service:softs:do
+    Service:manual:do

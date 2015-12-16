@@ -8,29 +8,29 @@ ruser="$RUSER"
 
 echo "=========================="
 echo "[sshkey]"
-rex -G $grp Service:sshkey:prepare
+rex -G $grp Service:sshkey:do
 
 echo "=========================="
 echo "[apt]"
-rex -G $grp Service:apt:prepare
+rex -G $grp Service:apt:do
 
 echo "=========================="
 echo "[docker]"
-rex -G $grp Service:docker:prepare --reload=all
+rex -G $grp Service:docker:do --reload=all
 
 echo "=========================="
 echo "[pip]"
-rex -G $grp Service:pip:prepare
-#rex -G $grp Service:hosts:prepare
+rex -G $grp Service:pip:do
+#rex -G $grp Service:hosts:do
 
 echo "=========================="
 echo "[pull dockerfile]"
 cmd="git clone https://github.com/peterxu/docker.git ~/.dockerfile"
-rex -G $grp Service:manual:custom --by=run --cmd="$cmd"
+rex -G $grp Service:manual:do --by=run --cmd="$cmd"
 
 echo "=========================="
 echo "[docker-compose]"
 cmd="pip install docker-compose"
-rex -G $grp Service:manual:custom --by=run --cmd="$cmd"
+rex -G $grp Service:manual:do --by=run --cmd="$cmd"
 
 exit 0
