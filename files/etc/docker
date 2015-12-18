@@ -6,7 +6,7 @@
 # Use DOCKER_OPTS to modify the daemon startup options.
 #DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"
 # Use 4243 for Shipyard, 2375 for swarm
-DOCKER_OPTS="--insecure-registry xdocker.host" 
+DOCKER_OPTS="--insecure-registry lark.io" 
 #DOCKER_OPTS="$DOCKER_OPTS -H tcp://0.0.0.0:2375 -H tcp://0.0.0.0:4243"
 
 # If you need Docker to use an HTTP proxy, it can also be specified here.
