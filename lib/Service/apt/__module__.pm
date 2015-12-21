@@ -2,10 +2,13 @@ package Service::apt;
 
 use Rex -base;
 
-desc "config apt source: --reload=yes|no, default no";
+desc "config apt source: --reload=yes|no, default yes";
 task "do", sub {
     my $params = shift;
     my $reload = $params->{reload};
+    if (!$reload) {
+        $reload = "yes";
+    }
 
     file "/etc/apt/sources.list",
         source => "files/apt/sources.list",
