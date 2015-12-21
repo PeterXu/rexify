@@ -122,4 +122,5 @@ require Service::pip;
 
 require Service::softs;
 require Service::manual;
+require Service::fperm;
 
