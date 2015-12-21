@@ -45,7 +45,7 @@ sub checkx {
     if ($rpass) {
         print BOLD YELLOW "\n[WARN] sudo(RPASS) activate?(y/n [n]):";
         $sure = $ENV{RSUDO};
-        if ($sure eq "stdin") {
+        if ($sure eq "") {
             $sure = <STDIN>;
         }
         print "\n";
@@ -64,7 +64,7 @@ sub checkx {
 
     print BOLD YELLOW "\n[WARN] continue?(y/n [y]):";
     $sure = $ENV{RTODO};
-    if ($ENV{RTODO} eq "stdin") {
+    if ($ENV{RTODO} eq "") {
         $sure = <STDIN>;
     }
     print "\n";

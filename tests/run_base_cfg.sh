@@ -6,7 +6,7 @@ ruser="$RUSER"
 [ "$grp" = "" -o "$ruser" = "" ] && exit 1
 opts="-t 1"
 
-todo1() 
+todo_base() 
 {
     local RSUDO=y
     local RTODO=y
@@ -34,20 +34,52 @@ todo1()
     rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
 }
 
-todo2() 
+todo_clone() 
 {
     local RSUDO=n
     local RTODO=y
-
     echo "=========================="
     echo "[pull dockerfile]"
     cmd="git clone https://github.com/peterxu/docker.git ~/.dockerfile"
     rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
 }
 
-todo1
+todo_update() 
+{
+    local RSUDO=n
+    local RTODO=y
+    echo "=========================="
+    echo "[pull dockerfile]"
+    cmd="cd ~/.dockerfile && git pull"
+    rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
+}
 
-echo "/////////////////////////////"
-todo2
+todo_chown() 
+{
+    local RSUDO=n
+    local RTODO=y
+    echo "=========================="
+    echo "[pull dockerfile]"
+    cmd="chown -R \$RUSER:\$RUSER ~/.dockerfile"
+    rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
+}
+
+next() 
+{
+    export RSUDO=""
+    export RTODO=""
+    [ $# -ne 1 ] && exit 1
+    echo "/////////////////////////////"
+    printf "\n\nTo continue <$1>(y/n): "
+    read ch
+    [ "$ch" != "y" ] && return 1
+    eval "$1"
+    return 0
+}
+
+
+next "todo_base"
+next "todo_clone"
+next "todo_update"
 
 exit 0
