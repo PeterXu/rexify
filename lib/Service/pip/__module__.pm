@@ -5,12 +5,8 @@ use Rex -base;
 desc "config pip.conf with custom index-url";
 task "do", sub {
     my $ruser = $ENV{RUSER};
-    file "~/.pip/pip.conf", 
-        source => "files/etc/pip.conf",
-        owner  => "$ruser",
-        group  => "$ruser",
-        mode   => 755;
-    file "/tmp/get-pip.py", source => "files/bin/get-pip.py";
+    upload "files/etc/pip.conf", "~/.pip/pip.conf";
+    upload "files/bin/get-pip.py", "/tmp/get-pip.py";
     run "python /tmp/get-pip.py";
     run "pip install -U pip";
 };

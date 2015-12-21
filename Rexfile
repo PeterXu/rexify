@@ -1,3 +1,9 @@
+#
+# $ENV{RUSER}, 
+# $ENV{RPASS}, 
+# $ENV{RSUDO}, "stdin|y|n" 
+# $ENV{RTODO}, "stdin|y|n"
+#
 $ruser = "peter";
 $rpass = $ENV{RPASS};
 $rlog  = "/tmp/rex.log";
@@ -38,20 +44,32 @@ sub checkx {
     my $sure;
     if ($rpass) {
         print BOLD YELLOW "\n[WARN] sudo(RPASS) activate?(y/n [n]):";
-        $sure = <STDIN>;
+        $sure = $ENV{RSUDO};
+        if ($sure eq "stdin") {
+            $sure = <STDIN>;
+        }
+        print "\n";
+
         chomp($sure);
         if ($sure eq "y") {
             sudo TRUE;
             sudo_password "$rpass";
         }
     }
-    if ($sure ne "y") {
+    if ($sure eq "y") {
+        print BLUE "[WARN] sudo(RPASS) [[activated]]!\n";
+    }else {
         print RED "[WARN] sudo(RPASS) [[deactivated]]!\n";
     }
 
     print BOLD YELLOW "\n[WARN] continue?(y/n [y]):";
-    $sure = <STDIN>;
+    $sure = $ENV{RTODO};
+    if ($ENV{RTODO} eq "stdin") {
+        $sure = <STDIN>;
+    }
+    print "\n";
     chomp($sure);
+
     print "\n\n";
     if ($sure eq "n") {
         exit 0;
