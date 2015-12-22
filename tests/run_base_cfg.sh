@@ -164,6 +164,7 @@ todo_create_vol()
     for host in $gluster_hosts; do
         cmd="$cmd $host:$mount"
     done
+    echo $cmd;
 
     mount="/mnt/brick2/data"
     for host in $gluster_hosts; do
@@ -171,6 +172,28 @@ todo_create_vol()
     done
     echo $cmd;
     #rex -G $curhost Service:manual:do --by=run --cmd="$cmd"
+}
+
+todo_set_vol() {
+    local container curhost vol cmd prop
+    container="yaml_glusterd_1"
+    curhost="hf-gluster-01"
+    vol="dist_disp_vol"
+    cmd="docker exec $container gluster volume set $vol"
+
+    prop="client.event-threads 4"
+    echo "$cmd $prop"
+    #rex -G $curhost Service:manual:do --by=run --cmd="$cmd $prop"
+    prop="server.event-threads 4"
+    echo "$cmd $prop"
+    #rex -G $curhost Service:manual:do --by=run --cmd="$cmd $prop"
+
+    prop="cluster.lookup-optimize on"
+    echo "$cmd $prop"
+    #rex -G $curhost Service:manual:do --by=run --cmd="$cmd $prop"
+    prop="performance.readdir-ahead on"
+    echo "$cmd $prop"
+    #rex -G $curhost Service:manual:do --by=run --cmd="$cmd $prop"
 }
 
 
@@ -192,11 +215,14 @@ do_test()
     #next "todo_update"
     #next "todo_docker_svc swarmagent-fig.yml docker-proxy up -d"
     #next "todo_docker_svc swarmagent-fig.yml swarm-agent-consul rm -f"
+
+    #next "todo_docker_svc glusterd-fig.yml all pull"
     #next "todo_docker_svc glusterd-fig.yml glusterd_data up -d"
     #next "todo_docker_svc glusterd-fig.yml glusterd up -d"
 
     #next "todo_peer_probe"
-    next "todo_create_vol"
+    #next "todo_create_vol"
+    #next "todo_set_vol"
 
     echo
 }
