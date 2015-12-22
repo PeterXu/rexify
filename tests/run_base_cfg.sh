@@ -47,7 +47,7 @@ todo_base()
 
     echo "=========================="
     echo "[docker-compose]"
-    cmd="pip install docker-compose"
+    local cmd="pip install docker-compose"
     rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
 }
 
@@ -57,7 +57,8 @@ todo_clone()
     local RTODO=y
     echo "=========================="
     echo "[pull dockerfile]"
-    cmd="git clone https://github.com/peterxu/docker.git ~/.dockerfile"
+    local uri="https://github.com/peterxu/dockerfile.git"
+    local cmd="rm -rf ~/.dockerfile; git clone $uri ~/.dockerfile"
     rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
 }
 
@@ -105,6 +106,36 @@ todo_fdisk()
     rex -G $grp Service:fdisk:do --mountpoint="$mpoint" --ondisk=$sdx --fstype=ext4 --label="$label"
 }
 
+todo_docker_proxy() 
+{
+    local RSUDO=n
+    local RTODO=y
+    echo "=========================="
+    echo "[docker-proxy] "
+    local yml="swarmagent-fig.yml"
+    local svc="docker-proxy"
+    local cmd="cd ~/.dockerfile/yaml && docker-compose -f $yml up -d $svc"
+    rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
+}
+
+todo_swarm_agent()
+{
+    local RSUDO=n
+    local RTODO=y
+    echo "=========================="
+    echo "[swarm-agent] "
+    local yml="swarmagent-fig.yml"
+    local svc="swarm-agent-consul"
+    local cmd="cd ~/.dockerfile/yaml && docker-compose -f $yml up -d $svc"
+    rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
+
+}
+
+
+##=========================
+##=========================
+##=========================
+
 do_prepare() 
 {
     next "todo_base"
@@ -113,6 +144,10 @@ do_prepare()
     next "todo_update"
 }
 
-next "todo_fdisk"
+do_test() 
+{
+    next "todo_clone"
+}
 
+do_test
 exit 0
