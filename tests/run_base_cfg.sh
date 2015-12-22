@@ -209,16 +209,32 @@ do_prepare()
     next "todo_update"
 }
 
+do_swarm() 
+{
+    next "todo_docker_svc swarmagent-fig.yml all pull"
+    next "todo_docker_svc swarmagent-fig.yml docker-proxy up -d"
+    next "todo_docker_svc swarmagent-fig.yml swarm-agent-consul up -d"
+}
+
+do_gluster() 
+{
+    next "todo_docker_svc glusterd-fig.yml all pull"
+    next "todo_docker_svc glusterd-fig.yml glusterd_data up -d"
+    next "todo_docker_svc glusterd-fig.yml glusterd up -d"
+}
+
+
+##=========================
+##=========================
+##=========================
+
 do_test() 
 {
     #next "todo_clone"
     #next "todo_update"
-    #next "todo_docker_svc swarmagent-fig.yml docker-proxy up -d"
-    #next "todo_docker_svc swarmagent-fig.yml swarm-agent-consul rm -f"
 
-    #next "todo_docker_svc glusterd-fig.yml all pull"
-    #next "todo_docker_svc glusterd-fig.yml glusterd_data up -d"
-    #next "todo_docker_svc glusterd-fig.yml glusterd up -d"
+    #do_swarm
+    #do_gluster
 
     #next "todo_peer_probe"
     #next "todo_create_vol"
@@ -228,4 +244,3 @@ do_test()
 }
 
 do_test
-exit 0
