@@ -124,6 +124,28 @@ todo_docker_svc()
     rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
 }
 
+todo_peer_probe() 
+{
+    local RSUDO=n
+    local RTODO=y
+
+    local cmd container curhost gluster_hosts 
+    container="yaml_glusterd_1"
+    curhost="hf-gluster-01"
+    gluster_hosts="hf-gluster-02 hf-gluster-03 hf-gluster-04 hf-gluster-05"
+
+    cmd="docker exec $container gluster peer status"
+    rex -G $curhost Service:manual:do --by=run --cmd="$cmd"
+
+    for host in $gluster_hosts; do
+        cmd="docker exec $container gluster peer probe $host"
+        rex -G $curhost Service:manual:do --by=run --cmd="$cmd"
+    done
+
+    cmd="docker exec $container gluster peer status"
+    rex -G $curhost Service:manual:do --by=run --cmd="$cmd"
+}
+
 
 ##=========================
 ##=========================
@@ -140,11 +162,15 @@ do_prepare()
 do_test() 
 {
     #next "todo_clone"
-    next "todo_update"
+    #next "todo_update"
     #next "todo_docker_svc swarmagent-fig.yml docker-proxy up -d"
     #next "todo_docker_svc swarmagent-fig.yml swarm-agent-consul rm -f"
-    next "todo_docker_svc glusterd-fig.yml glusterd_data up -d"
-    next "todo_docker_svc glusterd-fig.yml glusterd up -d"
+    #next "todo_docker_svc glusterd-fig.yml glusterd_data up -d"
+    #next "todo_docker_svc glusterd-fig.yml glusterd up -d"
+
+    #next "todo_peer_probe"
+
+    echo
 }
 
 do_test
