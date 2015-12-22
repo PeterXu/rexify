@@ -146,6 +146,33 @@ todo_peer_probe()
     rex -G $curhost Service:manual:do --by=run --cmd="$cmd"
 }
 
+todo_create_vol() 
+{
+    local RSUDO=n
+    local RTODO=y
+
+    local name cmd mount container curhost gluster_hosts
+
+    container="yaml_glusterd_1"
+    curhost="hf-gluster-01"
+    gluster_hosts="hf-gluster-01 hf-gluster-02 hf-gluster-03 hf-gluster-04 hf-gluster-05"
+
+    vol="dist_disp_vol"
+    cmd="docker exec $container gluster volume create $vol disperse 5 redundancy 2"
+
+    mount="/mnt/brick1/data"
+    for host in $gluster_hosts; do
+        cmd="$cmd $host:$mount"
+    done
+
+    mount="/mnt/brick2/data"
+    for host in $gluster_hosts; do
+        cmd="$cmd $host:$mount"
+    done
+    echo $cmd;
+    #rex -G $curhost Service:manual:do --by=run --cmd="$cmd"
+}
+
 
 ##=========================
 ##=========================
@@ -169,6 +196,7 @@ do_test()
     #next "todo_docker_svc glusterd-fig.yml glusterd up -d"
 
     #next "todo_peer_probe"
+    next "todo_create_vol"
 
     echo
 }
