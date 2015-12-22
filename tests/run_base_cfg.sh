@@ -106,29 +106,22 @@ todo_fdisk()
     rex -G $grp Service:fdisk:do --mountpoint="$mpoint" --ondisk=$sdx --fstype=ext4 --label="$label"
 }
 
-todo_docker_proxy() 
+
+todo_docker_svc() 
 {
+    [ $# -lt 3 ] && exit 1
+    local fyml="$1"; shift
+    local svc="$1"; shift
+    local action="$*"
+
     local RSUDO=n
     local RTODO=y
     echo "=========================="
-    echo "[docker-proxy] "
-    local yml="swarmagent-fig.yml"
-    local svc="docker-proxy"
-    local cmd="cd ~/.dockerfile/yaml && docker-compose -f $yml up -d $svc"
+    echo "[$fyml - $svc] "
+    local yml="~/.dockerfile/yaml/$fyml"
+    local cmd="docker-compose -f $yml $action $svc"
+    [ "$svc" = "all" ] && cmd="docker-compose -f $yml $action"
     rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
-}
-
-todo_swarm_agent()
-{
-    local RSUDO=n
-    local RTODO=y
-    echo "=========================="
-    echo "[swarm-agent] "
-    local yml="swarmagent-fig.yml"
-    local svc="swarm-agent-consul"
-    local cmd="cd ~/.dockerfile/yaml && docker-compose -f $yml up -d $svc"
-    rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
-
 }
 
 
@@ -146,7 +139,10 @@ do_prepare()
 
 do_test() 
 {
-    next "todo_clone"
+    #next "todo_clone"
+    #next "todo_update"
+    #next "todo_docker_svc swarmagent-fig.yml docker-proxy up -d"
+    next "todo_docker_svc swarmagent-fig.yml swarm-agent-consul rm -f"
 }
 
 do_test
