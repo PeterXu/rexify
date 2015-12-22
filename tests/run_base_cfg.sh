@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 
-[ $# -ne 1 ] && exit 1
+# usage: 
+#       RUSER=.. RPASS=.. RTNUM=1
+#       $0 group
+
+[ $# -ne 1 ] && echo "$0 group" && exit 1
 grp="$1"
 ruser="$RUSER"
-[ "$grp" = "" -o "$ruser" = "" ] && exit 1
-opts="-t 1"
+[ "$grp" = "" -o "$ruser" = "" ] && echo "RUSER=?" && exit 1
+[ "$RTNUM" != "" ] && opts="-t $RTNUM" || opts="-t 1"
 
 next() 
 {
@@ -80,11 +84,35 @@ todo_update()
     rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
 }
 
+todo_fdisk() 
+{
+    local sdx label mpoint
+    local RSUDO=y
+    local RTODO=y
+    echo "=========================="
+    echo "[fdisk] for sdb"
+    sdx="sdb"
+    label="sdx_label1"
+    mpoint="/mnt/brick1"
+    rex -G $grp Service:fdisk:do --mountpoint="$mpoint" --ondisk=$sdx --fstype=ext4 --label="$label"
 
-next "todo_base"
-next "todo_clone"
+    echo "[fdisk] for sdc"
+    read ch
 
-__chown_dir="~/.dockerfile" && next "todo_chown"
-next "todo_update"
+    sdx="sdc"
+    label="sdx_label2"
+    mpoint="/mnt/brick2"
+    rex -G $grp Service:fdisk:do --mountpoint="$mpoint" --ondisk=$sdx --fstype=ext4 --label="$label"
+}
+
+do_prepare() 
+{
+    next "todo_base"
+    next "todo_clone"
+    __chown_dir="~/.dockerfile" && next "todo_chown"
+    next "todo_update"
+}
+
+next "todo_fdisk"
 
 exit 0

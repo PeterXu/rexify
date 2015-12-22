@@ -101,7 +101,7 @@ sub initx {
 
     print $HOSTS "$hosts1_\n";
     close($HOSTS);
-    group "zzzgroups" => (@zgroups);
+    #group "zzzgroups" => (@zgroups);
 }
 
 
@@ -123,4 +123,5 @@ require Service::pip;
 require Service::softs;
 require Service::manual;
 require Service::fperm;
+require Service::fdisk;
 
