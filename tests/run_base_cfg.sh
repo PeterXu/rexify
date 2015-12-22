@@ -140,9 +140,11 @@ do_prepare()
 do_test() 
 {
     #next "todo_clone"
-    #next "todo_update"
+    next "todo_update"
     #next "todo_docker_svc swarmagent-fig.yml docker-proxy up -d"
-    next "todo_docker_svc swarmagent-fig.yml swarm-agent-consul rm -f"
+    #next "todo_docker_svc swarmagent-fig.yml swarm-agent-consul rm -f"
+    next "todo_docker_svc glusterd-fig.yml glusterd_data up -d"
+    next "todo_docker_svc glusterd-fig.yml glusterd up -d"
 }
 
 do_test
