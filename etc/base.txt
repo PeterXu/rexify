@@ -6,3 +6,8 @@ curl
 fuse
 lvm2
 util-linux
+
+# bandwidth monitor
+nload
+iftop
+iptraf
