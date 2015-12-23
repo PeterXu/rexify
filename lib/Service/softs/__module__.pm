@@ -12,8 +12,10 @@ task "do", sub {
         while (my $line = <FILE>){
             chomp($line);
             $line =~ s/(^\s+|\s+$)//g; 
-            if ($line !~ /^#/){
-                @softs = (@softs, $line);
+            if (length $line > 0) {
+                if ($line !~ /^#/){
+                    @softs = (@softs, $line);
+                }
             }
         }
         close(FILE);

@@ -206,7 +206,7 @@ do_prepare()
     next "todo_base"
     next "todo_clone"
     #__chown_dir="~/.dockerfile" && next "todo_chown"
-    next "todo_update"
+    #next "todo_update"
 }
 
 do_swarm() 

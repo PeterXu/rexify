@@ -1,13 +1,11 @@
 vim
-ufw
-iptables
+git
 wget
 curl
 fuse
 lvm2
 util-linux
-
-# bandwidth monitor
 nload
-iftop
-iptraf
+# bandwidth monitor
+#iftop
+#iptraf
