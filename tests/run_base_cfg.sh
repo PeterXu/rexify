@@ -81,7 +81,7 @@ todo_update()
     local RTODO=y
     echo "=========================="
     echo "[pull dockerfile]"
-    cmd="cd ~/.dockerfile && git pull"
+    cmd="cd ~/.dockerfile && git checkout . && git pull"
     rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
 }
 
@@ -205,22 +205,30 @@ do_prepare()
 {
     next "todo_base"
     next "todo_clone"
-    __chown_dir="~/.dockerfile" && next "todo_chown"
+    #__chown_dir="~/.dockerfile" && next "todo_chown"
     next "todo_update"
 }
 
 do_swarm() 
 {
     next "todo_docker_svc swarmagent-fig.yml all pull"
-    next "todo_docker_svc swarmagent-fig.yml docker-proxy up -d"
-    next "todo_docker_svc swarmagent-fig.yml swarm-agent-consul up -d"
+
+    local RSUDO=n
+    local RTODO=y
+    local cmd="host=\$(hostname); sed -in \"s/127.0.0.1/\$host/\" ~/.dockerfile/yaml/swarmagent-fig.yml"
+    rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
+
+    next "todo_docker_svc swarmagent-fig.yml all up -d"
 }
 
 do_gluster() 
 {
     next "todo_docker_svc glusterd-fig.yml all pull"
-    next "todo_docker_svc glusterd-fig.yml glusterd_data up -d"
-    next "todo_docker_svc glusterd-fig.yml glusterd up -d"
+    #next "todo_docker_svc glusterd-fig.yml all stop"
+    #next "todo_docker_svc glusterd-fig.yml all rm -f"
+    #next "todo_docker_svc glusterd-fig.yml glusterd_data up -d"
+    #next "todo_docker_svc glusterd-fig.yml glusterd up -d"
+    next "todo_docker_svc glusterd-fig.yml all up -d"
 }
 
 
@@ -230,16 +238,6 @@ do_gluster()
 
 do_test() 
 {
-    #next "todo_clone"
-    #next "todo_update"
-
-    #do_swarm
-    #do_gluster
-
-    #next "todo_peer_probe"
-    #next "todo_create_vol"
-    #next "todo_set_vol"
-
     echo
 }
 
