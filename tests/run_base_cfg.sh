@@ -58,6 +58,7 @@ todo_clone()
     echo "=========================="
     echo "[pull dockerfile]"
     local uri="https://github.com/peterxu/dockerfile.git"
+    local uri="http://lark.io:10080/itools/dockerfile.git"
     local cmd="rm -rf ~/.dockerfile; git clone $uri ~/.dockerfile"
     rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
 }
