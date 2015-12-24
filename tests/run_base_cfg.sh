@@ -216,7 +216,7 @@ do_swarm()
 
     local RSUDO=n
     local RTODO=y
-    local cmd="host=\$(hostname); sed -in \"s/127.0.0.1/\$host/\" ~/.dockerfile/yaml/swarmagent-fig.yml"
+    local cmd="host=\$(hostname).sportsdata.cn; sed -in \"s/127.0.0.1/\$host/\" ~/.dockerfile/yaml/swarmagent-fig.yml"
     rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
 
     next "todo_docker_svc swarmagent-fig.yml all up -d"
@@ -230,6 +230,19 @@ do_gluster()
     #next "todo_docker_svc glusterd-fig.yml glusterd_data up -d"
     #next "todo_docker_svc glusterd-fig.yml glusterd up -d"
     next "todo_docker_svc glusterd-fig.yml all up -d"
+}
+
+do_soccerdojo()
+{
+    next "todo_docker_svc soccerdojo-fig.yml all pull"
+
+    local RSUDO=n
+    local RTODO=y
+    local cmd="host=\$(hostname).sportsdata.cn; sed -in \"s/DB_HOST=db_host/DB_HOST=\$host/\" ~/.dockerfile/yaml/swarmagent-fig.yml"
+    rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
+
+    next "todo_docker_svc soccerdojo-fig.yml all up -d"
+    echo
 }
 
 
