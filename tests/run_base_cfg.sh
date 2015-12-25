@@ -104,7 +104,7 @@ do_update()
     next "todo_man \"$msg\" \"$cmd\""
 }
 
-source gluster_ctrl.sh
+source `pwd`/tests/gluster_ctrl.sh
 
 ##=========================
 ##=========================
@@ -156,24 +156,24 @@ do_gluster()
 do_soccerdojo()
 {
     local yml="soccerdojo-fig.yml"
-    local msg="replace DB_HOST=db_host for $yml"
-    local cmd="host=\$(hostname).sportsdata.cn; sed -in \"s/DB_HOST=db_host/DB_HOST=\$host/\" ~/.dockerfile/yaml/$yml"
+    local msg="$yml"
+    local cmd="echo"
     do_docker_run $yml "$msg" "$cmd"
 }
 
 do_portal()
 {
     local yml="portal-fig.yml"
-    local msg="replace SERVERIP=soccerdojo_host in $yml"
-    local cmd="host=\$(hostname).sportsdata.cn; host=\${host/hf-*-/hf-soccerdojo-}; sed -in \"s/soccerdojo_host/\$host/\" ~/.dockerfile/yaml/$yml"
+    local msg="$yml"
+    local cmd="echo"
     do_docker_run $yml "$msg" "$cmd"
 }
 
 do_portalpro()
 {
     local yml="portalpro-fig.yml"
-    local msg="replace SERVERIP=soccerdojo_host in $yml"
-    local cmd="host=\$(hostname).sportsdata.cn; host=\${host/hf-*-/hf-soccerdojo-}; sed -in \"s/soccerdojo_host/\$host/\" ~/.dockerfile/yaml/$yml"
+    local msg="$yml"
+    local cmd="echo"
     do_docker_run $yml "$msg" "$cmd"
 }
 
