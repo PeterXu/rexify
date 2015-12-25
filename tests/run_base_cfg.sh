@@ -165,7 +165,13 @@ do_portal()
 {
     local yml="portal-fig.yml"
     local msg="$yml"
-    local cmd="echo"
+    local cmd=""
+
+    cmd="sed -in \"s/127.0.0.1/10.11.200.11/\" /etc/portal/config.properties"
+    cmd="$cmd; docker restart HUP yaml_portal_1"
+    todo_man_sudo  "$msg" "$cmd"
+
+    cmd="echo"
     do_docker_run $yml "$msg" "$cmd"
 }
 
@@ -173,7 +179,14 @@ do_portalpro()
 {
     local yml="portalpro-fig.yml"
     local msg="$yml"
-    local cmd="echo"
+    local cmd=""
+
+    cmd="sed -in \"s/127.0.0.1/10.11.200.12/\" /etc/portalpro/config.properties"
+    cmd="$cmd; docker restart yaml_portalpro_1"
+    todo_man_sudo  "$msg" "$cmd"
+
+    cmd="echo"
     do_docker_run $yml "$msg" "$cmd"
+
 }
 
