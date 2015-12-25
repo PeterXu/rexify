@@ -167,9 +167,10 @@ do_portal()
     local msg="$yml"
     local cmd=""
 
-    cmd="sed -in \"s/127.0.0.1/10.11.200.11/\" /etc/portal/config.properties"
-    cmd="$cmd; docker restart HUP yaml_portal_1"
-    todo_man_sudo  "$msg" "$cmd"
+    #cmd="sed -in \"s/127.0.0.1/10.11.200.11/\" /etc/portal/config.properties"
+    #cmd="$cmd; docker restart HUP yaml_portal_1"
+    #cmd="rm -rf /var/log/portal_tomcat7_log/; docker stop yaml_portal_1"
+    #todo_man_sudo  "$msg" "$cmd"
 
     cmd="echo"
     do_docker_run $yml "$msg" "$cmd"
@@ -181,12 +182,12 @@ do_portalpro()
     local msg="$yml"
     local cmd=""
 
-    cmd="sed -in \"s/127.0.0.1/10.11.200.12/\" /etc/portalpro/config.properties"
-    cmd="$cmd; docker restart yaml_portalpro_1"
-    todo_man_sudo  "$msg" "$cmd"
+    #cmd="sed -in \"s/127.0.0.1/10.11.200.12/\" /etc/portalpro/config.properties"
+    #cmd="$cmd; docker restart yaml_portalpro_1"
+    #cmd="rm -rf /var/log/portalpro_tomcat7_log/; docker stop yaml_portalpro_1"
+    #todo_man_sudo  "$msg" "$cmd"
 
     cmd="echo"
     do_docker_run $yml "$msg" "$cmd"
-
 }
 
