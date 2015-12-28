@@ -1,16 +1,15 @@
-package Service::fperm;
+package Service::run;
 
 use Rex -base;
- 
-my $ruser = $ENV{RUSER};
 
-desc "chown user/group for: --fdir=..";
+desc "run cmd on remote host: --cmd=..";
 task "do" => sub {
     my $params = shift;
-    my $fdir = $params->{fdir};
-    if ($fdir) {
-        chgrp "$ruser", "$fdir", recursive => 1;
-        chown "$ruser", "$fdir", recursive => 1;
+    my $cmd = $params->{cmd};
+    if ($cmd) {
+        run "$cmd";
+    }else {
+        print "remote run cmd: --cmd=..\n";
     }
 };
 
@@ -30,10 +29,10 @@ $::module_name - {{ SHORT DESCRIPTION }}
 
 {{ USAGE DESCRIPTION }}
 
- include qw/Service::fperm/;
+ include qw/Service::run/;
 
  task yourtask => sub {
-    Service::fperm::example();
+    Service::run::example();
  };
 
 =head1 TASKS

@@ -121,8 +121,11 @@ require Service::docker;
 require Service::pip;
 
 require Service::softs;
-require Service::manual;
 require Service::fperm;
 require Service::fdisk;
+
+# utils
+require Service::manual;
+require Service::run;
 require Service::upload;
 
