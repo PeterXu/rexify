@@ -153,6 +153,27 @@ do_gluster()
     do_docker_svc $yml all up -d
 }
 
+do_gluster_clent()
+{
+    local msg="config gluster client"
+    local cmd="docker pull lark.io/glusterfs:stable"
+    cmd="$cmd; docker run --rm -v /var/lib:/root/lib lark.io/glusterfs:stable cp -rf /var/lib/glusterfs /root/lib/"
+    next "todo_man \"$msg\" \"$cmd\""
+
+    cmd="mkdir -p /mnt/nshare"
+    cmd="$cmd; ln -sf /var/lib/glusterfs/rootfs/sbin/mount.glusterfs /sbin/"
+    next "todo_man_sudo \"$msg\" \"$cmd\""
+}
+
+do_gluster_mount()
+{
+    local msg="mount gluster"
+    local host="hf-gluster-03.sportsdata.cn"
+    local mnt="$host:/dist_disp_vol /mnt/nshare glusterfs defaults,_netdev 0 0"
+    local cmd="mkdir -p /mnt/nshare; sed -in /glusterfs/d /etc/fstab; echo \"$mnt\" >> /etc/fstab; mount -a"
+    next "todo_man_sudo \"$msg\" \"$cmd\""
+}
+
 do_soccerdojo()
 {
     local yml="soccerdojo-fig.yml"
