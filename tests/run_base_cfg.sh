@@ -213,3 +213,19 @@ do_portalpro()
     do_docker_run $yml "$msg" "$cmd"
 }
 
+do_portal_cfg()
+{
+    local RSUDO=y RTODO=y
+    local src="files/etc/portal-config.properties"
+    local dst="/etc/portal/config.properties"
+    rex -G $grp $opts Service:upload:do --src="$src" --dst="$dst"
+}
+
+do_portalpro_cfg()
+{
+    local RSUDO=y RTODO=y
+    local src="files/etc/portalpro-config.properties"
+    local dst="/etc/portalpro/config.properties"
+    rex -G $grp $opts Service:upload:do --src="$src" --dst="$dst"
+}
+
