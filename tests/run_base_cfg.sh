@@ -215,6 +215,10 @@ do_portalpro()
 
 do_portal_cfg()
 {
+    local msg="mkdir /etc/portal"
+    local cmd="mkdir /etc/portal"
+    todo_man_sudo  "$msg" "$cmd"
+
     local RSUDO=y RTODO=y
     local src="files/etc/portal-config.properties"
     local dst="/etc/portal/config.properties"
@@ -223,9 +227,25 @@ do_portal_cfg()
 
 do_portalpro_cfg()
 {
+    local msg="mkdir /etc/portalpro"
+    local cmd="mkdir /etc/portalpro"
+    todo_man_sudo  "$msg" "$cmd"
+
     local RSUDO=y RTODO=y
     local src="files/etc/portalpro-config.properties"
     local dst="/etc/portalpro/config.properties"
+    rex -G $grp $opts Service:upload:do --src="$src" --dst="$dst"
+}
+
+do_laurels_cfg()
+{
+    local msg="mkdir /etc/laurels"
+    local cmd="mkdir /etc/laurels"
+    todo_man_sudo  "$msg" "$cmd"
+
+    local RSUDO=y RTODO=y
+    local src="files/etc/laurels-config.properties"
+    local dst="/etc/laurels/config.properties"
     rex -G $grp $opts Service:upload:do --src="$src" --dst="$dst"
 }
 
