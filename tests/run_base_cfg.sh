@@ -237,6 +237,7 @@ do_portalpro_cfg()
     rex -G $grp $opts Service:upload:do --src="$src" --dst="$dst"
 }
 
+# both laurels and portalpro in the same servers
 do_laurels_cfg()
 {
     local msg="mkdir /etc/laurels"
