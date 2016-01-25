@@ -71,6 +71,23 @@ todo_base()
     local cmd="pip install docker-compose"
     rex -G $grp $opts Service:manual:do --by=run --cmd="$cmd"
 }
+
+todo_chown() 
+{
+    [ "$__chown_dir" = "" ] && return 1
+    local RSUDO=y RTODO=y
+    echo "=========================="
+    echo "[chown <$__chown_dir>]"
+    cmd="chown -R \$RUSER:\$RUSER $__chown_dir"
+    rex -G $grp $opts Service:fperm:do --fdir="$__chown_dir"
+    __chown_dir=""
+}
+
+
+##====================================================
+##====================================================
+##====================================================
+
 do_base() { 
     next "todo_base"; 
 }
@@ -84,16 +101,6 @@ do_clone()
     next "todo_man \"$msg\" \"$cmd\""
 }
 
-todo_chown() 
-{
-    [ "$__chown_dir" = "" ] && return 1
-    local RSUDO=y RTODO=y
-    echo "=========================="
-    echo "[chown <$__chown_dir>]"
-    cmd="chown -R \$RUSER:\$RUSER $__chown_dir"
-    rex -G $grp $opts Service:fperm:do --fdir="$__chown_dir"
-    __chown_dir=""
-}
 do_chown() {
     __chown_dir="~/.dockerfile" && next "todo_chown";
 }
@@ -141,12 +148,14 @@ do_docker_run()
     echo
 }
 
-do_stop_rm()
+# stop + rm -f
+do_docker_remove()
 {
     [ $# -ne 1 ] && exit 1
-    local yml="$1"
-    do_docker_svc $yml all stop
-    do_docker_svc $yml all rm -f
+    local fyml="$1"
+    local yml="~/.dockerfile/yaml/$fyml"
+    local cmd="docker-compose -f $yml stop; docker-compose -f $yml rm -f"
+    next "todo_man \"$msg\" \"$cmd\""
 }
 
 
@@ -201,48 +210,6 @@ do_mount()
     local msg="mount gluster disk"
     local cmd="mount -a"
     next "todo_man_sudo \"$msg\" \"$cmd\""
-}
-
-#=========================================================
-#=========================================================
-#=========================================================
-
-do_soccerdojo()
-{
-    local yml="soccerdojo-fig.yml"
-    local msg="$yml"
-    local cmd="echo"
-    do_docker_run $yml "$msg" "$cmd"
-}
-
-do_portal()
-{
-    local yml="portal-fig.yml"
-    local msg="$yml"
-    local cmd=""
-
-    #cmd="sed -in \"s/127.0.0.1/10.11.200.11/\" /etc/portal/config.properties"
-    #cmd="$cmd; docker restart HUP yaml_portal_1"
-    #cmd="rm -rf /var/log/portal_tomcat7_log/; docker stop yaml_portal_1"
-    #todo_man_sudo  "$msg" "$cmd"
-
-    cmd="echo"
-    do_docker_run $yml "$msg" "$cmd"
-}
-
-do_portalpro()
-{
-    local yml="portalpro-fig.yml"
-    local msg="$yml"
-    local cmd=""
-
-    #cmd="sed -in \"s/127.0.0.1/10.11.200.12/\" /etc/portalpro/config.properties"
-    #cmd="$cmd; docker restart yaml_portalpro_1"
-    #cmd="rm -rf /var/log/portalpro_tomcat7_log/; docker stop yaml_portalpro_1"
-    #todo_man_sudo  "$msg" "$cmd"
-
-    cmd="echo"
-    do_docker_run $yml "$msg" "$cmd"
 }
 
 
