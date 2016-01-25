@@ -4,8 +4,9 @@
 #       RUSER=.. RPASS=.. RTNUM=1
 #       $0 group
 
-[ $# -ne 1 ] && echo "$0 group" && exit 1
-grp="$1"
+[ $# -eq 1 ] && grp="$1" || grp="$RGROUP"
+[ "${#grp}" -lt 3 ] && echo "usage: $0 group" && exit 1
+
 ruser="$RUSER"
 [ "$grp" = "" -o "$ruser" = "" ] && echo "RUSER=?" && exit 1
 [ "$RTNUM" != "" ] && opts="-t $RTNUM" || opts="-t 1"
@@ -106,10 +107,13 @@ do_update()
 
 source `pwd`/tests/gluster_ctrl.sh
 
-##=========================
-##=========================
-##=========================
 
+##====================================================
+##====================================================
+##====================================================
+
+# 
+# usage: $0 yml service action(up -d/start/stop)
 do_docker_svc() 
 {
     [ $# -lt 3 ] && exit 1
@@ -124,6 +128,9 @@ do_docker_svc()
     next "todo_man \"$msg\" \"$cmd\""
 }
 
+#
+# desc: pull => up -d
+# usage: $0 yml msg cmd
 do_docker_run()
 {
     [ $# -ne 3 ] && exit 1
@@ -133,6 +140,19 @@ do_docker_run()
     do_docker_svc $yml all up -d
     echo
 }
+
+do_stop_rm()
+{
+    [ $# -ne 1 ] && exit 1
+    local yml="$1"
+    do_docker_svc $yml all stop
+    do_docker_svc $yml all rm -f
+}
+
+
+#=========================================================
+#=========================================================
+#=========================================================
 
 do_swarm() 
 {
@@ -175,6 +195,18 @@ do_gluster_mount()
     next "todo_man_sudo \"$msg\" \"$cmd\""
 }
 
+# for soccerdojo/portal/portalpro/laurels nodes
+do_mount() 
+{
+    local msg="mount gluster disk"
+    local cmd="mount -a"
+    next "todo_man_sudo \"$msg\" \"$cmd\""
+}
+
+#=========================================================
+#=========================================================
+#=========================================================
+
 do_soccerdojo()
 {
     local yml="soccerdojo-fig.yml"
@@ -212,6 +244,11 @@ do_portalpro()
     cmd="echo"
     do_docker_run $yml "$msg" "$cmd"
 }
+
+
+#=========================================================
+#=========================================================
+#=========================================================
 
 do_portal_cfg()
 {
