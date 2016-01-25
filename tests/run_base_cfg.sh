@@ -88,7 +88,8 @@ todo_chown()
 ##====================================================
 ##====================================================
 
-do_base() { 
+do_base() 
+{ 
     next "todo_base"; 
 }
 
@@ -101,7 +102,8 @@ do_clone()
     next "todo_man \"$msg\" \"$cmd\""
 }
 
-do_chown() {
+do_chown() 
+{
     __chown_dir="~/.dockerfile" && next "todo_chown";
 }
 
@@ -112,14 +114,20 @@ do_update()
     next "todo_man \"$msg\" \"$cmd\""
 }
 
-source `pwd`/tests/gluster_ctrl.sh
+# mount for soccerdojo/portal/portalpro/laurels nodes
+do_mount() 
+{
+    local msg="mount gluster disk"
+    local cmd="mount -a"
+    next "todo_man_sudo \"$msg\" \"$cmd\""
+}
+
 
 
 ##====================================================
 ##====================================================
 ##====================================================
 
-# 
 # usage: $0 yml service action(up -d/start/stop)
 do_docker_svc() 
 {
@@ -135,8 +143,7 @@ do_docker_svc()
     next "todo_man \"$msg\" \"$cmd\""
 }
 
-#
-# desc: pull => up -d
+# pull => up -d
 # usage: $0 yml msg cmd
 do_docker_run()
 {
@@ -171,18 +178,7 @@ do_swarm()
     do_docker_run $yml "$msg" "$cmd"
 }
 
-do_gluster() 
-{
-    local yml="glusterd-fig.yml"
-    do_docker_svc $yml all pull
-    #do_docker_svc $yml all stop
-    #do_docker_svc $yml all rm -f
-    #do_docker_svc $yml glusterd_data up -d
-    #do_docker_svc $yml glusterd up -d
-    do_docker_svc $yml all up -d
-}
-
-do_gluster_clent()
+do_gluster_client()
 {
     local msg="config gluster client"
     local cmd="docker pull lark.io/glusterfs:stable"
@@ -204,53 +200,44 @@ do_gluster_mount()
     next "todo_man_sudo \"$msg\" \"$cmd\""
 }
 
-# for soccerdojo/portal/portalpro/laurels nodes
-do_mount() 
+
+#=========================================================
+#=========================================================
+#=========================================================
+
+do_upload_cfg()
 {
-    local msg="mount gluster disk"
-    local cmd="mount -a"
-    next "todo_man_sudo \"$msg\" \"$cmd\""
-}
-
-
-#=========================================================
-#=========================================================
-#=========================================================
-
-do_portal_cfg()
-{
-    local msg="mkdir /etc/portal"
-    local cmd="mkdir /etc/portal"
+    [ $# -ne 3 ] && return
+    local msg="[$1]" cmd="$1"
     todo_man_sudo  "$msg" "$cmd"
 
     local RSUDO=y RTODO=y
+    local src="$2" dst="$3"
+    rex -G $grp $opts Service:upload:do --src="$src" --dst="$dst"
+}
+
+do_portal_cfg()
+{
+    local cmd="mkdir /etc/portal"
     local src="files/etc/portal-config.properties"
     local dst="/etc/portal/config.properties"
-    rex -G $grp $opts Service:upload:do --src="$src" --dst="$dst"
+    do_upload_cfg "$cmd" "$src" "$dst"
 }
 
 do_portalpro_cfg()
 {
-    local msg="mkdir /etc/portalpro"
     local cmd="mkdir /etc/portalpro"
-    todo_man_sudo  "$msg" "$cmd"
-
-    local RSUDO=y RTODO=y
     local src="files/etc/portalpro-config.properties"
     local dst="/etc/portalpro/config.properties"
-    rex -G $grp $opts Service:upload:do --src="$src" --dst="$dst"
+    do_upload_cfg "$cmd" "$src" "$dst"
 }
 
 # both laurels and portalpro in the same servers
 do_laurels_cfg()
 {
-    local msg="mkdir /etc/laurels"
     local cmd="mkdir /etc/laurels"
-    todo_man_sudo  "$msg" "$cmd"
-
-    local RSUDO=y RTODO=y
     local src="files/etc/laurels-config.properties"
     local dst="/etc/laurels/config.properties"
-    rex -G $grp $opts Service:upload:do --src="$src" --dst="$dst"
+    do_upload_cfg "$cmd" "$src" "$dst"
 }
 
