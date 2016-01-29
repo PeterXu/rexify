@@ -2,12 +2,17 @@ package Service::run;
 
 use Rex -base;
 
-desc "run cmd on remote host: --cmd=..";
+desc "run cmd on remote host: --cmd=.. [--echo=yes]";
 task "do" => sub {
     my $params = shift;
     my $cmd = $params->{cmd};
+    my $echo = $params->{echo};
     if ($cmd) {
-        run "$cmd";
+        if ($echo eq "yes") {
+            say run "$cmd";
+        }else {
+            run "$cmd";
+        }
     }else {
         print "remote run cmd: --cmd=..\n";
     }
