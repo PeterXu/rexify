@@ -14,6 +14,7 @@ ip1="$2"
 OFS="$IFS" && IFS="." && ips=($ip1) && IFS="$OFS"
 ip1pre="${ips[0]}.${ips[1]}.${ips[2]}"
 
+## step1
 cat <<EOF > /etc/rc.local
 #!/bin/sh -e
 #
@@ -42,5 +43,21 @@ ip rule add from ${ip1} table eth1-default
 exit 0
 EOF
 
+## step2
+cat <<EOF > /etc/iproute2/rt_tables
+#
+# reserved values
+#
+255	local
+254	main
+253	default
+252	eth0-default
+251	eth1-default
+0	unspec
+#
+# local
+#
+#1	inr.ruhep
+EOF
 
 exit 0
