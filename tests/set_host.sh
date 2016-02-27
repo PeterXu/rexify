@@ -10,13 +10,14 @@ EOF
 
 
 ## step2: set ip address
+eth="eth0"
 dns="10.11.210.253"
 [ ${#2} -lt 4 ] && echo "invalid ipaddr" && exit 1
 ipaddr="$2"
 OFS="$IFS" && IFS="." && ips=($ipaddr) && IFS="$OFS"
 ippre="${ips[0]}.${ips[1]}.${ips[2]}"
 
-echo "[*] set ipaddr: <$ipaddr> dns: <$dns>"
+echo "[*] set <$eth> ip: <$ipaddr>, dns: <$dns>"
 cat <<EOF > /etc/network/interfaces
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
@@ -26,8 +27,8 @@ auto lo
 iface lo inet loopback
 
 # The primary network interface
-auto eth0
-iface eth0 inet static
+auto $eth
+iface $eth inet static
 address $ipaddr
 netmask 255.255.255.0
 network ${ippre}.0
@@ -35,7 +36,7 @@ broadcast ${ippre}.255
 gateway ${ippre}.254
 
 # dns-* options are implemented by the resolvconf package, if installed
-dns-nameservers ${dns} 202.102.192.68
+dns-nameservers $dns 202.102.192.68
 dns-search sportsdata.cn
 EOF
 
