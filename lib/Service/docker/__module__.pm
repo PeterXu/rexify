@@ -37,7 +37,7 @@ task "do", sub {
         };
 
     upload "files/etc/docker", "/etc/default/docker";
-    upload "files/etc/docker.service", "/lib/systemd/system/docker.service";
+    #upload "files/etc/docker.service", "/lib/systemd/system/docker.service";
 
     if ($reload eq "yes") {
         service docker => "restart";
