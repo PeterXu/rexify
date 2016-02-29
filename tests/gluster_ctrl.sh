@@ -55,6 +55,13 @@ todo_create_vol()
     cmd="docker exec $container gluster volume create $vol replica 3 arbiter 1"
     cmd="$cmd $ip1:$mount $ip2:$mount $ip3:$arbiter1 $ip3:$mount $ip4:$mount $ip2:$arbiter2"
     echo $cmd;
+    echo
+
+    vol="dist_repl_vol"
+    mount="/mnt/brick1/dist_repl"
+    cmd="docker exec $container gluster volume create $vol replica 2"
+    cmd="$cmd $ip1:$mount $ip2:$mount $ip3:$mount $ip4:$mount"
+    echo $cmd;
     return;
 
 

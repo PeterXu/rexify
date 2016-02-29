@@ -194,7 +194,7 @@ do_gluster_mount()
 {
     local msg="mount gluster"
     local host="10.11.210.134"
-    local mnt="$host:/dist_repl_arbi_vol /mnt/nshare glusterfs defaults,_netdev 0 0"
+    local mnt="$host:/dist_repl_vol /mnt/nshare glusterfs defaults,_netdev 0 0"
     local cmd="mkdir -p /mnt/nshare; mount | grep \"/mnt/nshare\" && exit 0"
     cmd="$cmd; sed -in /glusterfs/d /etc/fstab; echo \"$mnt\" >> /etc/fstab; mount -a"
     next "todo_man_sudo \"$msg\" \"$cmd\""
