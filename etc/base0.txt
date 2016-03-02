@@ -1,3 +1,4 @@
 htop
 nload
 iptraf
+dstat
