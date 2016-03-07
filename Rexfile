@@ -124,6 +124,8 @@ require Service::softs;
 require Service::fperm;
 require Service::fdisk;
 
+require Service::sshd_config;
+
 # utils
 require Service::manual;
 require Service::run;
