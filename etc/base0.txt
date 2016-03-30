@@ -1,3 +1,4 @@
+ntp
 unzip
 htop
 nload
