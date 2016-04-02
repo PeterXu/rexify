@@ -198,6 +198,12 @@ do_gluster_mount()
     local cmd="mkdir -p /mnt/nshare; mount | grep \"/mnt/nshare\" && exit 0"
     cmd="$cmd; sed -in /glusterfs/d /etc/fstab; echo \"$mnt\" >> /etc/fstab; mount -a"
     next "todo_man_sudo \"$msg\" \"$cmd\""
+
+    msg="add <mount -a> to /etc/rc.local"
+    echo "[WARN] =======> require: $msg"
+    cmd="sed -in '/^mount -a/d' /etc/rc.local; sed -in '/^exit 0/d' /etc/rc.local"
+    cmd="$cmd; echo 'mount -a' >> /etc/rc.local; echo 'exit 0' >> /etc/rc.local"
+    next "todo_man_sudo \"$msg\" \"$cmd\""
 }
 
 
