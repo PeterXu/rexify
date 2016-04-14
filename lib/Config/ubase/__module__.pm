@@ -2,9 +2,15 @@ package Config::ubase;
 
 use Rex -base;
 
-task example => sub {
+use Config::common;
+
+
+
+task "do" => sub {
    my $output = run "uptime";
    say $output;
+
+   Config::common::do_test;
 };
 
 1;
