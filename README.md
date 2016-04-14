@@ -10,9 +10,6 @@ create module:
     b. lib/Service/NTP/files/etc/NTP.conf  
     c. rex -H yourserver01 Service:NTP:prepare  
 
-rexify Template::Service --create-module
-rexify Template::File --create-module
-rexify Servers::App --create-module
 ```
 
 
