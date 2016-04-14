@@ -6,11 +6,15 @@ use Config::common;
 
 
 task "do" => sub {
-   my $output = run "uptime";
-   say $output;
-
-   my %param = ('arg'=>'ok');
+   my %param = ('testing'=>'true', 'ruser'=>"$ENV{RUSER}");
    Config::common::do_test(%param);
+
+   Config::common::do_apt(%param);
+   Config::common::do_docker(%param);
+   Config::common::do_pip(%param);
+
+   $param{conf} = 'etc/base0.txt';
+   Config::common::do_soft(%param);
 };
 
 1;
