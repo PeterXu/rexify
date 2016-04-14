@@ -4,17 +4,27 @@ use Rex -base;
 
 use Config::common;
 
+task "do_test" => sub {
+   my %params = ('testing'=>'true', 'ruser'=>"$ENV{RUSER}");
+   Config::common::do_test(%params);
+};
 
 task "do" => sub {
-   my %param = ('testing'=>'true', 'ruser'=>"$ENV{RUSER}");
-   Config::common::do_test(%param);
+   my %params = ('testing'=>'true', 'ruser'=>"$ENV{RUSER}");
 
-   Config::common::do_apt(%param);
-   Config::common::do_docker(%param);
-   Config::common::do_pip(%param);
+   Config::common::do_apt(%params);
+   Config::common::do_docker(%params);
+   Config::common::do_pip(%params);
 
-   $param{conf} = 'etc/base0.txt';
-   Config::common::do_soft(%param);
+   $params{conf} = 'etc/base0.txt';
+   Config::common::do_soft(%params);
+};
+
+task "do_ssh" => sub {
+   my %params = ('testing'=>'true', 'ruser'=>"$ENV{RUSER}");
+
+   Config::common::do_sshkey(%params);
+   Config::common::do_sshd(%params);
 };
 
 1;

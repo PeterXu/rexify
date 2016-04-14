@@ -114,6 +114,21 @@ END
 };
 
 
+# for sshd_config
+sub do_sshd {
+    my (%params) = @_;
+    if (%params{testing} eq "true") {return;}
+
+    # disable ssh login with password only with key.
+    my $cmdstr = <<END;
+    sed -in 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config; 
+    rm -f /etc/ssh/sshd_confign; 
+END
+    say run $cmdstr;
+    service ssh => "reload";
+}
+
+
 # install softs from: conf=etc/base.txt
 sub do_soft {
     my (%params) = @_;
