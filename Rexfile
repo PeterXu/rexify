@@ -1,12 +1,14 @@
 #!/usr/bin/env perl
 
 use Rex::Args;
-Rex::Args->parse_rex_opts;
+use Rex::Helper::INI;
+
 
 # cur user
 $cuser = `whoami`;
 
 # command-line opts
+Rex::Args->parse_rex_opts;
 my %opts   = Rex::Args->getopts;
 $ruser = $opts{u}; # user
 $rpass = $opts{p}; # pass
@@ -24,6 +26,8 @@ use Term::ANSIColor qw(:constants);
 $Term::ANSIColor::AUTORESET = 1;
 
 
+## ================================================
+
 ## init env
 sub init_env {
     if (!$ruser) { die "Pls run with rex: -u user\n"; }
@@ -38,32 +42,60 @@ sub init_env {
     timeout 5; # ssh timeout
 }
 
+## parse group
+sub parse_group {
+  my ($file) = @_;
 
-## set group
-sub set_group {
-    use Rex::Group::Lookup::INI;
-    groups_file $rini;
+  open( my $INI, "<", "$file" ) || die "Can't open $file: $!\n";
+  my @lines = <$INI>;
+  chomp @lines;
+  close($INI);
 
-    # config /etc/hosts
-    my $host = "/tmp/etc.hosts";
-    open( my $fhost, ">", "$host" ) || die "Can't open $host: $!\n";
-    print $fhost "## [$host begin]\n";
+  # config /etc/hosts
+  my $host = "/tmp/etc.hosts";
+  open( my $fhost, ">", "$host" ) || die "Can't open $host: $!\n";
+  print $fhost "## [$host begin]\n";
 
-    my %groups = Rex::Group->get_groups;
-    foreach my $grp (keys %groups) {
-        my @val = @{$groups{$grp}};
-        chomp $grp;
-        $grp =~ s/(^\s+|\s+$)//g;
-        if ($grp !~ /^@/) { print $fhost "@val\t\t$grp\n";}
+
+  my $hash = Rex::Helper::INI::parse(@lines);
+
+  for my $k ( keys %{$hash} ) {
+    my @servers;
+    for my $servername ( keys %{ $hash->{$k} } ) {
+      my $add = {};
+      if ( exists $hash->{$k}->{$servername}
+        && ref $hash->{$k}->{$servername} eq "HASH" )
+      {
+        $add = $hash->{$k}->{$servername};
+      }
+
+      my $obj = Rex::Group::Entry::Server->new( name => $servername, %{$add} );
+      push @servers, $obj;
     }
 
-    print $fhost "## [$host end]\n";
-    close($fhost);
+    if ($k !~ /^@/) { 
+        chomp $k;
+        $k =~ s/(^\s+|\s+$)//g;
+        printf $fhost ("%-20s    %s\n", $k, @servers);
+    }else {
+        group( "$k" => @servers );
+    }
+  }
+
+  print $fhost "## [$host end]\n";
+  close($fhost);
 }
 
 
-&init_env;
-&set_group;
+## ================================================
+
+# init
+init_env;
+parse_group $rini;
+
+# modules
+require Config::ubase;
+
 
 
 1;
