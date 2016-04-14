@@ -5,12 +5,12 @@ use Rex -base;
 use Config::common;
 
 
-
 task "do" => sub {
    my $output = run "uptime";
    say $output;
 
-   Config::common::do_test;
+   my %param = ('arg'=>'ok');
+   Config::common::do_test(%param);
 };
 
 1;
