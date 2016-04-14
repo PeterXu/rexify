@@ -55,8 +55,11 @@ sub parse_group {
 
   # config /etc/hosts
   my $host = "/tmp/etc.hosts";
+  my $host0 = "## [$host begin]";
+  my $host1 = "## [$host end]";
+
   open( my $fhost, ">", "$host" ) || die "Can't open $host: $!\n";
-  print $fhost "## [$host begin]\n";
+  print $fhost "$host0\n";
 
 
   my $hash = Rex::Helper::INI::parse(@lines);
@@ -84,7 +87,7 @@ sub parse_group {
     }
   }
 
-  print $fhost "## [$host end]\n";
+  print $fhost "$host1\n";
   close($fhost);
 }
 

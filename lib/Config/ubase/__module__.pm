@@ -27,6 +27,12 @@ task "do_ssh" => sub {
    Config::common::do_sshd(%params);
 };
 
+task "do_hosts" => sub {
+   my %params = ('testing'=>'true', 'ruser'=>"$ENV{RUSER}");
+
+   Config::common::do_hosts(%params);
+};
+
 1;
 
 =pod

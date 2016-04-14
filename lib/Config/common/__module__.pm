@@ -159,5 +159,32 @@ sub do_soft {
 };
 
 
+# set /etc/hosts: cleanonly=yes
+sub do_hosts {
+    my (%params) = @_;
+    if (%params{testing} eq "true") {return;}
+
+    my $clean = %params{cleanonly};
+
+    # clear previous
+    my $host = "/tmp/etc.hosts";
+    my $host0 = "## [$host begin]";
+    my $host1 = "## [$host end]";
+
+    my $cmdstr = <<END;
+    sed -in /"$host0"/,/"$host1"/d /etc/hosts;
+END
+    say run $cmdstr;
+    if ($clean eq "yes") { return; }
+
+
+    # set latest
+    upload $host, $host;
+    $cmdstr = <<END;
+    cat /etc/hosts | grep "$host0" >/dev/null 2>&1 || cat $host >> /etc/hosts; rm -f $host;
+END
+    say run $cmdstr;
+};
+
 
 1;
