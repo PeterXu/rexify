@@ -23,7 +23,7 @@ task "do" => sub {
 };
 
 
-desc "[\@ref] do by --mod=.., sshkey|sshd|hosts, softs|upload|fdisk|chown --xx";
+desc "[\@ref] do by --mod=.., sshkey|sshd|hosts, softs|upload|fdisk|chown|run --xx";
 task "do_mod" => sub {
     my $args = shift;
     my $mod = $args->{mod};
@@ -39,8 +39,8 @@ task "do_mod" => sub {
         Config::common::do_hosts(%params);
     }elsif($mod eq "softs") {
         unless ($args->{conf}) { die "usage: --mod=softs --conf=base0.txt"; }
-
         $params{conf} = $args->{conf};
+
         Config::common::do_softs(%params);
     }elsif($mod eq "upload") {
         unless ($args->{src} or $args->{dst}) { 
@@ -49,6 +49,7 @@ task "do_mod" => sub {
 
         $params{src} = $args->{src};
         $params{dst} = $args->{dst};
+
         Config::common::do_upload(%params);
     }elsif($mod eq "fdisk") {
         unless ($args->{mountpoint} or $args->{ondisk} or $args->{fstype}) {
@@ -64,7 +65,6 @@ task "do_mod" => sub {
         Config::common::do_fdisk(%params);
     }elsif($mod eq "chown") {
         unless($args->{path}) { die "usage: --path=.. [--owner=.. --group=..]\n"; }
-
         $params{path} = $args->{path};
 
         unless($args->{owner}) { $params{owner} = $params{ruser}; }
@@ -73,6 +73,14 @@ task "do_mod" => sub {
         if ($args->{group}) { $params{group} = $args->{group}; }
 
         Config::common::do_chown(%params);
+    }elsif($mod eq "run") {
+        unless($args->{cmd}) { die "usage: --cmd=str|\@file.. [--func=.. --echo=yes|no]\n"; }
+        $params{cmd} = $args->{cmd};
+
+        if ($args->{func}) { $params{func} = $args->{func}; }
+        if ($args->{echo}) { $params{echo} = $args->{echo}; }
+
+        Config::common::do_run(%params);
     }else {
         die "do not support --mod=$mod";
     }

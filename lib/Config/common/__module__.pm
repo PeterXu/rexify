@@ -203,7 +203,7 @@ sub do_upload {
     upload "$src", "$dst";
 };
 
-# (cmd=>.., [echo=>yes|no])
+# (cmd=>.., [func=>.., echo=>yes|no])
 sub do_run {
     my (%params) = @_;
     if (%params{todo} ne "true") {return;}
