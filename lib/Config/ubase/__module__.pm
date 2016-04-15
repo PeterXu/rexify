@@ -74,10 +74,8 @@ task "do_mod" => sub {
 
         Config::common::do_chown(%params);
     }elsif($mod eq "run") {
-        unless($args->{cmd}) { die "usage: --cmd=str|\@file.. [--func=.. --echo=yes|no]\n"; }
+        unless($args->{cmd}) { die "usage: --cmd=str|\@file.. [--echo=yes|no]\n"; }
         $params{cmd} = $args->{cmd};
-
-        if ($args->{func}) { $params{func} = $args->{func}; }
         if ($args->{echo}) { $params{echo} = $args->{echo}; }
 
         Config::common::do_run(%params);

@@ -208,22 +208,19 @@ sub do_run {
     my (%params) = @_;
     if (%params{todo} ne "true") {return;}
 
+    my $echo = %params{echo};
     my $cmd = %params{cmd};
     unless ($cmd) { die "usage: do_run(cmd=>.., [echo=>yes|no])\n";}
     
     if ($cmd =~ /^@/) { 
-        my $func = %params{func};
-        unless ($func) { die "usage: do_run(cmd=>.., func=>.., [echo=>yes|no])\n"; }
-
         my $cmdfile = substr($cmd, 1);
         open(my $FILE, "<", $cmdfile) || die "Cannot open $cmdfile: $!\n";
-        my @lines = <FILE>;
-        close(FILE);
+        my @lines = <$FILE>;
+        close($FILE);
 
-        $cmd = "@lines $func";
+        $cmd = "@lines";
     }
 
-    my $echo = %params{echo};
     if ($echo eq "yes") {
         say run "$cmd";
     }else {
