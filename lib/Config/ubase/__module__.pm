@@ -9,6 +9,7 @@ task "do_test" => sub {
     Config::common::do_test(%params);
 };
 
+
 desc "[\@ref] for apt/docker/pip/base0.txt";
 task "do" => sub {
     my %params = ('todo'=>'true', 'ruser'=>"$ENV{RUSER}");
@@ -22,7 +23,7 @@ task "do" => sub {
 };
 
 
-desc "[\@ref] do by --mod=.., sshkey|sshd|hosts, softs|upload|fdisk --xx";
+desc "[\@ref] do by --mod=.., sshkey|sshd|hosts, softs|upload|fdisk|chown --xx";
 task "do_mod" => sub {
     my $args = shift;
     my $mod = $args->{mod};
@@ -42,23 +43,36 @@ task "do_mod" => sub {
         $params{conf} = $args->{conf};
         Config::common::do_softs(%params);
     }elsif($mod eq "upload") {
-        if (!$args->{src} or !$args->{dst}) {
-            die "usage: --mod=upload --src=.. --dst=.."
+        unless ($args->{src} or $args->{dst}) { 
+            die "usage: --mod=upload --src=.. --dst=..\n"; 
         }
 
         $params{src} = $args->{src};
         $params{dst} = $args->{dst};
         Config::common::do_upload(%params);
     }elsif($mod eq "fdisk") {
-        if (!$args->{mountpoint} or !$args->{ondisk} or !$args->{fstype}) {
+        unless ($args->{mountpoint} or $args->{ondisk} or $args->{fstype}) {
             die "usage: --mountpoint=/mnt/share --ondisk=sdb|c --fstype=ext3|4, [--label=..])\n";
         }
 
         $params{mountpoint} = $args->{mountpoint};
         $params{ondisk} = $args->{ondisk};
         $params{fstype} = $args->{fstype};
-        $params{label} = $args->{label};
+
+        if ($args->{label}) { $params{label} = $args->{label}; }
+
         Config::common::do_fdisk(%params);
+    }elsif($mod eq "chown") {
+        unless($args->{path}) { die "usage: --path=.. [--owner=.. --group=..]\n"; }
+
+        $params{path} = $args->{path};
+
+        unless($args->{owner}) { $params{owner} = $params{ruser}; }
+        else { $params{owner} = $args->{owner}; }
+
+        if ($args->{group}) { $params{group} = $args->{group}; }
+
+        Config::common::do_chown(%params);
     }else {
         die "do not support --mod=$mod";
     }

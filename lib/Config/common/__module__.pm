@@ -157,10 +157,8 @@ sub do_softs {
         @softs = (@softs, $line);
     }
     
-    if (@softs) {
-        # pkg [ qw/ufw iptables vim curl wget/ ], ensure => "present";
-        pkg [ @softs ], ensure => "present";
-    }
+    # pkg [ qw/ufw iptables vim curl wget/ ], ensure => "present";
+    if (@softs) { pkg [ @softs ], ensure => "present"; }
 };
 
 
@@ -200,9 +198,7 @@ sub do_upload {
     my $src = %params{src};
     my $dst = %params{dst};
 
-    if (!$src or !$dst) {
-        die "usage: do_upload(('src'=>.., 'dst'=>..))\n";
-    }
+    unless ($src or $dst) { die "usage: do_upload('src'=>.., 'dst'=>..)\n"; }
 
     upload "$src", "$dst";
 };
@@ -253,6 +249,8 @@ sub do_fdisk {
     chomp $ondisk;
     if ($ondisk =~ "^sda") { die "[WARN] <$ondisk> may be your system disk!"; }
 
+    print "[INFO] 'mount -t $fstype /dev/$ondisk $mountpoint' with lable<$label>";
+
     my $exec = Rex::Interface::Exec->create;
     my $device = "/dev/$ondisk";
     my ($m_out, $m_err) = $exec->exec("mount");
@@ -286,6 +284,24 @@ sub do_fdisk {
         mount_persistent => TRUE,
         type   => "primary";
 };
+
+
+# (path=>.., [owner=>.., group=>..])
+sub do_chown {
+    my (%params) = @_;
+    if (%params{todo} ne "true") {return;}
+
+    my $path = %params{path};
+    my $owner = %params{owner};
+    my $group = %params{group};
+
+    unless ($path)  { die "usage: do_chown(path=>.., [owner=>.., group=>..])\n"; }
+
+    print "[INFO] 'chown $owner:$group $path'\n";
+    if ($owner) { chown "$owner", "$path", recursive => 1; }
+    if ($group) { chgrp "$group", "$path", recursive => 1; }
+};
+
 
 
 1;
