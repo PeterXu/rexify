@@ -1,6 +1,8 @@
 package Config::common;
 
 use Rex -base;
+use Rex::Commands::Partition;
+
 
 sub do_test {
     my $output = run "uptime";
@@ -15,13 +17,14 @@ sub do_test {
 }
 
 
-# reload=yes|no, default yes
+
+# ([reload=>yes|no]), default yes
 sub do_apt {
     my (%params) = @_;
     if (%params{todo} ne "true") {return;}
 
     my $reload = %params{reload};
-    if (!$reload) {$reload = "yes";}
+    unless ($reload) {$reload = "yes";}
 
     file "/etc/apt/sources.list",
         source => "files/apt/sources.list",
@@ -36,18 +39,17 @@ sub do_apt {
 };
 
 
-# reload=yes|no|all, default no
-# another way
-# wget -qO- https://get.docker.com/gpg | sudo apt-key add -
-# wget -qO- https://get.docker.com/ | sh
+# (ruser=>.., [reload=yes|no|all]), reload default no
+# another way:
+#   wget -qO- https://get.docker.com/gpg | sudo apt-key add -
+#   wget -qO- https://get.docker.com/ | sh
 sub do_docker {
     my (%params) = @_;
     if (%params{todo} ne "true") {return;}
 
-    my $reload = %params{reload};
     my $ruser = %params{ruser};
-
-    if (!$ruser) { die "[ERROR] no ruser"; }
+    my $reload = %params{reload};
+    unless ($ruser) { die "usage: do_docker(ruser=>.., [reload=yes|no|all])"; }
 
     file "/etc/apt/sources.list.d/docker.list",
         source => "files/apt/docker.list",
@@ -96,13 +98,13 @@ sub do_pip {
 };
 
 
-# config ssh public key: pubkey=~/.ssh/id_rsa.pub
+# (pubkey=>~/.ssh/id_rsa.pub)
 sub do_sshkey {
     my (%params) = @_;
     if (%params{todo} ne "true") {return;}
 
     my $pubkey = %params{pubkey};
-    if (!$pubkey) { die "[ERROR] no pubkey"; }
+    unless ($pubkey) { die "usage: do_sshkey(pubkey=>..)"; }
 
     upload "$pubkey", "/tmp/id_rsa.pub";
 
@@ -132,13 +134,13 @@ END
 }
 
 
-# install softs from: conf=etc/base.txt
+# install softs from: (conf=>etc/base.txt)
 sub do_softs {
     my (%params) = @_;
     if (%params{todo} ne "true") {return;}
 
     my $conf = %params{conf};
-    if (!$conf) { die "[ERROR] no conf"; }
+    unless ($conf) { die "usage: do_softs(conf=>..)"; }
 
     open(my $FILE, "<", $conf) || die "cannot open $conf: $!\n";
     my @lines = <$FILE>;
@@ -203,6 +205,86 @@ sub do_upload {
     }
 
     upload "$src", "$dst";
+};
+
+# (cmd=>.., [echo=>yes|no])
+sub do_run {
+    my (%params) = @_;
+    if (%params{todo} ne "true") {return;}
+
+    my $cmd = %params{cmd};
+    unless ($cmd) { die "usage: do_run(cmd=>.., [echo=>yes|no])\n";}
+    
+    if ($cmd =~ /^@/) { 
+        my $func = %params{func};
+        unless ($func) { die "usage: do_run(cmd=>.., func=>.., [echo=>yes|no])\n"; }
+
+        $cmdfile = substr($cmd, 1);
+        open(my $FILE, "<", $cmdfile) || die "Cannot open $cmdfile: $!\n";
+        my @lines = <FILE>;
+        close(FILE);
+
+        $cmd = "@lines $func";
+    }
+
+    my $echo = %params{echo};
+    if ($echo eq "yes") {
+        say run "$cmd";
+    }else {
+        run "$cmd";
+    }
+};
+
+
+# (mountpoint=>/mnt/share, ondisk=>sdb|c, fstype=>ext3|4, [label=>..])
+sub do_fdisk {
+    my (%params) = @_;
+    if (%params{todo} ne "true") {return;}
+
+    my $mountpoint = %params{mountpoint};
+    my $ondisk = %params{ondisk};
+    my $fstype = %params{fstype};
+    my $label = %params{label};
+
+    unless ($mountpoint) { die "have to specify --mountpoint=..\n"; }
+    unless ($ondisk) { die "have to specify --ondisk=sd?\n"; }
+    unless ($fstype) { die "have to specify --fstype=ext?\n"; }
+
+    chomp $ondisk;
+    if ($ondisk =~ "^sda") { die "[WARN] <$ondisk> may be your system disk!"; }
+
+    my $exec = Rex::Interface::Exec->create;
+    my $device = "/dev/$ondisk";
+    my ($m_out, $m_err) = $exec->exec("mount");
+    my @mounted = split( /\r?\n/, $m_out );
+
+    my $check = "yes";
+    my $already_mounted;
+    ($already_mounted) = grep { m/on $mountpoint/ } @mounted;
+    if ($already_mounted) {
+        if ($check eq "yes") { die "[WARN] $mountpoint already mounted\n"; }
+        $exec->exec("umount $mountpoint");
+    }
+
+    ($already_mounted) = grep { m/$device/ } @mounted;
+    if ($already_mounted) { die "[WARN] <$device> already mounted\n"; }
+
+    run "sed -in /LABEL=$label/d /etc/fstab";
+    run "[ -e /dev/${ondisk}1 ] && parted /dev/$ondisk rm 1";
+    run "[ -e /dev/${ondisk}2 ] && parted /dev/$ondisk rm 2";
+    run "[ -e /dev/${ondisk}3 ] && parted /dev/$ondisk rm 3";
+    #clearpart "$ondisk";
+    clearpart "$ondisk", initialize => "gpt";
+    #return;
+    
+    mkdir "$mountpoint";
+    partition "$mountpoint",
+        ondisk  => "$ondisk",
+        fstype  => "$fstype",
+        label   => "$label",
+        grow    => 1,
+        mount_persistent => TRUE,
+        type   => "primary";
 };
 
 

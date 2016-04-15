@@ -30,15 +30,15 @@ $Term::ANSIColor::AUTORESET = 1;
 
 ## init env
 sub init_env {
-    if (!$ruser) { die "[ERROR] Pls run with rex: -u user\n"; }
-    if (!$rlog) { $rlog = "/tmp/rex.log"; }
-    if (!$rini) { $rini = "etc/server.ini"; }
+    unless ($ruser) { die "[ERROR] Pls run with rex: -u user\n"; }
+    unless ($rlog) { $rlog = "/tmp/rex.log"; }
+    unless ($rini) { $rini = "etc/server.ini"; }
 
     user "$ruser";
     $ENV{RUSER} = $ruser;
 
-    if (!$prikey) { private_key "~/.ssh/id_rsa"; key_auth; }
-    if (!$pubkey) { public_key  "~/.ssh/id_rsa.pub"; key_auth; }
+    unless ($prikey) { private_key "~/.ssh/id_rsa"; key_auth; }
+    unless ($pubkey) { public_key  "~/.ssh/id_rsa.pub"; key_auth; }
 
     logging to_file => "$rlog";
     timeout 5; # ssh timeout

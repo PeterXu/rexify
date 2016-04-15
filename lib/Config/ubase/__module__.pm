@@ -22,11 +22,11 @@ task "do" => sub {
 };
 
 
-desc "[\@ref] do by --mod=.., sshkey|sshd|hosts, softs --conf, upload --src= --dst=";
+desc "[\@ref] do by --mod=.., sshkey|sshd|hosts, softs|upload|fdisk --xx";
 task "do_mod" => sub {
     my $args = shift;
     my $mod = $args->{mod};
-    if (!$mod) { die "[ERROR] usage by --mod=.."; };
+    unless ($mod) { die "[ERROR] usage by --mod=.."; }
 
     my %params = ('todo'=>'true', 'ruser'=>"$ENV{RUSER}");
 
@@ -37,9 +37,7 @@ task "do_mod" => sub {
     }elsif($mod eq "hosts") {
         Config::common::do_hosts(%params);
     }elsif($mod eq "softs") {
-        if (!$args->{conf}) {
-            die "[ERROR] usage: --mod=softs --conf=base0.txt";
-        }
+        unless ($args->{conf}) { die "[ERROR] usage: --mod=softs --conf=base0.txt"; }
 
         $params{conf} = $args->{conf};
         Config::common::do_softs(%params);
@@ -51,6 +49,16 @@ task "do_mod" => sub {
         $params{src} = $args->{src};
         $params{dst} = $args->{dst};
         Config::common::do_upload(%params);
+    }elsif($mod eq "fdisk") {
+        if (!$args->{mountpoint} or !$args->{ondisk} or !$args->{fstype}) {
+            die "usage: --mountpoint=/mnt/share --ondisk=sdb|c --fstype=ext3|4, [--label=..])\n";
+        }
+
+        $params{mountpoint} = $args->{mountpoint};
+        $params{ondisk} = $args->{ondisk};
+        $params{fstype} = $args->{fstype};
+        $params{label} = $args->{label};
+        Config::common::do_fdisk(%params);
     }else {
         die "[ERROR] do not support --mod=$mod";
     }
