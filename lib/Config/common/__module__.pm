@@ -177,8 +177,8 @@ sub do_hosts {
 
     # clear previous
     my $host = "/tmp/etc.hosts";
-    my $host0 = "## [$host begin]";
-    my $host1 = "## [$host end]";
+    my $host0 = "## etc.hosts begin";
+    my $host1 = "## etc.hosts end";
 
     my $cmdstr = <<END;
     sed -in /"$host0"/,/"$host1"/d /etc/hosts;

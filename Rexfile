@@ -62,8 +62,8 @@ sub parse_group {
 
   # config /etc/hosts
   my $host = "/tmp/etc.hosts";
-  my $host0 = "## [$host begin]";
-  my $host1 = "## [$host end]";
+  my $host0 = "## etc.hosts begin";
+  my $host1 = "## etc.hosts end";
 
   open( my $fhost, ">", "$host" ) || die "Can't open $host: $!\n";
   print $fhost "$host0\n";
