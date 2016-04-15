@@ -18,7 +18,7 @@ task "do" => sub {
     Config::common::do_docker(%params);
     Config::common::do_pip(%params);
 
-    $params{conf} = 'etc/base0.txt';
+    $params{list} = '@etc/base0.txt';
     Config::common::do_softs(%params);
 };
 
@@ -36,10 +36,12 @@ task "do_mod" => sub {
     }elsif($mod eq "sshd") {
         Config::common::do_sshd(%params);
     }elsif($mod eq "hosts") {
+        if ($args->{cleanonly}) { $params{cleanonly} = $args->{cleanonly}; }
+
         Config::common::do_hosts(%params);
     }elsif($mod eq "softs") {
-        unless ($args->{conf}) { die "usage: --mod=softs --conf=base0.txt"; }
-        $params{conf} = $args->{conf};
+        unless ($args->{list}) { die "usage: --mod=softs --list=p1,p2|\@file"; }
+        $params{list} = $args->{list};
 
         Config::common::do_softs(%params);
     }elsif($mod eq "upload") {

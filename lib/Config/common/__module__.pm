@@ -134,29 +134,35 @@ END
 }
 
 
-# install softs from: (conf=>etc/base.txt)
+# install softs from: (list=>p1,p2|@etc/base.txt)
 sub do_softs {
     my (%params) = @_;
     if (%params{todo} ne "true") {return;}
 
-    my $conf = %params{conf};
-    unless ($conf) { die "usage: do_softs(conf=>..)"; }
-
-    open(my $FILE, "<", $conf) || die "cannot open $conf: $!\n";
-    my @lines = <$FILE>;
-    chomp @lines;
-    close($FILE);
+    my $list = %params{list};
+    unless ($list) { die "usage: do_softs(list=>p1,p2|\@etc/base.txt)"; }
 
     my @softs = ();
-    foreach my $line (@lines) {
-        chomp $line;
-        ($line =~ (/^#|^;|^\s*$/)) && (next);
+    if ($list =~ /^@/) { 
+        my $listfile = substr($list, 1);
+        open(my $FILE, "<", $listfile) || die "cannot open $listfile: $!\n";
+        my @lines = <$FILE>;
+        chomp @lines;
+        close($FILE);
 
-        $line =~ s/\n|\r//g;
-        $line =~ s/(^\s+|\s+$)//g;
-        @softs = (@softs, $line);
+        foreach my $line (@lines) {
+            chomp $line;
+            ($line =~ (/^#|^;|^\s*$/)) && (next);
+
+            $line =~ s/\n|\r//g;
+            $line =~ s/(^\s+|\s+$)//g;
+            @softs = (@softs, $line);
+        }
+    }else {
+        @softs = split(/,/, $list);
     }
-    
+
+    print "[INFO] installing @softs \n";
     # pkg [ qw/ufw iptables vim curl wget/ ], ensure => "present";
     if (@softs) { pkg [ @softs ], ensure => "present"; }
 };
