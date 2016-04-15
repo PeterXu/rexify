@@ -5,33 +5,57 @@ use Rex -base;
 use Config::common;
 
 task "do_test" => sub {
-   my %params = ('testing'=>'true', 'ruser'=>"$ENV{RUSER}");
-   Config::common::do_test(%params);
+    my %params = ('todo'=>'true', 'ruser'=>"$ENV{RUSER}");
+    Config::common::do_test(%params);
 };
 
+desc "[\@ref] for apt/docker/pip/base0.txt";
 task "do" => sub {
-   my %params = ('testing'=>'true', 'ruser'=>"$ENV{RUSER}");
+    my %params = ('todo'=>'true', 'ruser'=>"$ENV{RUSER}");
 
-   Config::common::do_apt(%params);
-   Config::common::do_docker(%params);
-   Config::common::do_pip(%params);
+    Config::common::do_apt(%params);
+    Config::common::do_docker(%params);
+    Config::common::do_pip(%params);
 
-   $params{conf} = 'etc/base0.txt';
-   Config::common::do_soft(%params);
+    $params{conf} = 'etc/base0.txt';
+    Config::common::do_softs(%params);
 };
 
-task "do_ssh" => sub {
-   my %params = ('testing'=>'true', 'ruser'=>"$ENV{RUSER}");
 
-   Config::common::do_sshkey(%params);
-   Config::common::do_sshd(%params);
+desc "[\@ref] do by --mod=.., sshkey|sshd|hosts, softs --conf, upload --src= --dst=";
+task "do_mod" => sub {
+    my $args = shift;
+    my $mod = $args->{mod};
+    if (!$mod) { die "[ERROR] usage by --mod=.."; };
+
+    my %params = ('todo'=>'true', 'ruser'=>"$ENV{RUSER}");
+
+    if ($mod eq "sshkey") {
+        Config::common::do_sshkey(%params);
+    }elsif($mod eq "sshd") {
+        Config::common::do_sshd(%params);
+    }elsif($mod eq "hosts") {
+        Config::common::do_hosts(%params);
+    }elsif($mod eq "softs") {
+        if (!$args->{conf}) {
+            die "[ERROR] usage: --mod=softs --conf=base0.txt";
+        }
+
+        $params{conf} = $args->{conf};
+        Config::common::do_softs(%params);
+    }elsif($mod eq "upload") {
+        if (!$args->{src} or !$args->{dst}) {
+            die "[ERROR] usage: --mod=upload --src=.. --dst=.."
+        }
+
+        $params{src} = $args->{src};
+        $params{dst} = $args->{dst};
+        Config::common::do_upload(%params);
+    }else {
+        die "[ERROR] do not support --mod=$mod";
+    }
 };
 
-task "do_hosts" => sub {
-   my %params = ('testing'=>'true', 'ruser'=>"$ENV{RUSER}");
-
-   Config::common::do_hosts(%params);
-};
 
 1;
 

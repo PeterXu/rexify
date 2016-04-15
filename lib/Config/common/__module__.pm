@@ -3,19 +3,22 @@ package Config::common;
 use Rex -base;
 
 sub do_test {
-   my $output = run "uptime";
-   say $output;
+    my $output = run "uptime";
+    say $output;
 
-   my (%params) = @_;
-   print "params: ", %params, "\n\n";
-   if (%params{testing} eq "true") {return;}
+    my (%params) = @_;
+    print "params: ", %params, "\n\n";
+    if (%params{todo} ne "true") {
+        print "todo is not true\n";
+        return;
+    }
 }
 
 
 # reload=yes|no, default yes
 sub do_apt {
     my (%params) = @_;
-    if (%params{testing} eq "true") {return;}
+    if (%params{todo} ne "true") {return;}
 
     my $reload = %params{reload};
     if (!$reload) {$reload = "yes";}
@@ -39,7 +42,7 @@ sub do_apt {
 # wget -qO- https://get.docker.com/ | sh
 sub do_docker {
     my (%params) = @_;
-    if (%params{testing} eq "true") {return;}
+    if (%params{todo} ne "true") {return;}
 
     my $reload = %params{reload};
     my $ruser = %params{ruser};
@@ -86,7 +89,7 @@ sub do_docker {
 # config pip
 sub do_pip {
     my (%params) = @_;
-    if (%params{testing} eq "true") {return;}
+    if (%params{todo} ne "true") {return;}
 
     pkg "python-pip", ensure => "present";
     run "pip install -U pip";
@@ -96,7 +99,7 @@ sub do_pip {
 # config ssh public key: pubkey=~/.ssh/id_rsa.pub
 sub do_sshkey {
     my (%params) = @_;
-    if (%params{testing} eq "true") {return;}
+    if (%params{todo} ne "true") {return;}
 
     my $pubkey = %params{pubkey};
     if (!$pubkey) { die "[ERROR] no pubkey"; }
@@ -117,7 +120,7 @@ END
 # for sshd_config
 sub do_sshd {
     my (%params) = @_;
-    if (%params{testing} eq "true") {return;}
+    if (%params{todo} ne "true") {return;}
 
     # disable ssh login with password only with key.
     my $cmdstr = <<END;
@@ -130,9 +133,9 @@ END
 
 
 # install softs from: conf=etc/base.txt
-sub do_soft {
+sub do_softs {
     my (%params) = @_;
-    if (%params{testing} eq "true") {return;}
+    if (%params{todo} ne "true") {return;}
 
     my $conf = %params{conf};
     if (!$conf) { die "[ERROR] no conf"; }
@@ -162,7 +165,7 @@ sub do_soft {
 # set /etc/hosts: cleanonly=yes
 sub do_hosts {
     my (%params) = @_;
-    if (%params{testing} eq "true") {return;}
+    if (%params{todo} ne "true") {return;}
 
     my $clean = %params{cleanonly};
 
@@ -184,6 +187,22 @@ END
     cat /etc/hosts | grep "$host0" >/dev/null 2>&1 || cat $host >> /etc/hosts; rm -f $host;
 END
     say run $cmdstr;
+};
+
+
+# upload file: (src=.. dst=..)
+sub do_upload {
+    my (%params) = @_;
+    if (%params{todo} ne "true") {return;}
+
+    my $src = %params{src};
+    my $dst = %params{dst};
+
+    if (!$src or !$dst) {
+        die "usage: do_upload(('src'=>.., 'dst'=>..))\n";
+    }
+
+    upload "$src", "$dst";
 };
 
 
