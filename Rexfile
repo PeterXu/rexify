@@ -17,6 +17,8 @@ $spass = $opts{S}; # sudo pass
 $pubkey = $opts{K}; # public key
 $prikey = $opts{P}; # private key
 
+$optT = $opts{T} or $opts{Tm} or $opts{Tv} or $opts{Ty};
+
 # custom opts
 $rlog = $ENV{RLOG};
 $rini = $ENV{RINI};
@@ -30,12 +32,17 @@ $Term::ANSIColor::AUTORESET = 1;
 
 ## init env
 sub init_env {
-    unless ($ruser) { die "[ERROR] Pls run with rex: -u user\n"; }
+    unless($optT) {
+        unless ($ruser) { die "[ERROR] Pls run with rex: -u user\n"; }
+    }
+
     unless ($rlog) { $rlog = "/tmp/rex.log"; }
     unless ($rini) { $rini = "etc/server.ini"; }
 
-    user "$ruser";
-    $ENV{RUSER} = $ruser;
+    if($ruser) {
+        user "$ruser";
+        $ENV{RUSER} = $ruser;
+    }
 
     unless ($prikey) { private_key "~/.ssh/id_rsa"; key_auth; }
     unless ($pubkey) { public_key  "~/.ssh/id_rsa.pub"; key_auth; }

@@ -219,7 +219,7 @@ sub do_run {
         my $func = %params{func};
         unless ($func) { die "usage: do_run(cmd=>.., func=>.., [echo=>yes|no])\n"; }
 
-        $cmdfile = substr($cmd, 1);
+        my $cmdfile = substr($cmd, 1);
         open(my $FILE, "<", $cmdfile) || die "Cannot open $cmdfile: $!\n";
         my @lines = <FILE>;
         close(FILE);

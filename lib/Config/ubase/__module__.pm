@@ -26,7 +26,7 @@ desc "[\@ref] do by --mod=.., sshkey|sshd|hosts, softs|upload|fdisk --xx";
 task "do_mod" => sub {
     my $args = shift;
     my $mod = $args->{mod};
-    unless ($mod) { die "[ERROR] usage by --mod=.."; }
+    unless ($mod) { die "usage by --mod=.."; }
 
     my %params = ('todo'=>'true', 'ruser'=>"$ENV{RUSER}");
 
@@ -37,13 +37,13 @@ task "do_mod" => sub {
     }elsif($mod eq "hosts") {
         Config::common::do_hosts(%params);
     }elsif($mod eq "softs") {
-        unless ($args->{conf}) { die "[ERROR] usage: --mod=softs --conf=base0.txt"; }
+        unless ($args->{conf}) { die "usage: --mod=softs --conf=base0.txt"; }
 
         $params{conf} = $args->{conf};
         Config::common::do_softs(%params);
     }elsif($mod eq "upload") {
         if (!$args->{src} or !$args->{dst}) {
-            die "[ERROR] usage: --mod=upload --src=.. --dst=.."
+            die "usage: --mod=upload --src=.. --dst=.."
         }
 
         $params{src} = $args->{src};
@@ -60,7 +60,7 @@ task "do_mod" => sub {
         $params{label} = $args->{label};
         Config::common::do_fdisk(%params);
     }else {
-        die "[ERROR] do not support --mod=$mod";
+        die "do not support --mod=$mod";
     }
 };
 
