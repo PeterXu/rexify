@@ -88,7 +88,7 @@ sub parse_group {
     if ($k !~ /^@/) { 
         chomp $k;
         $k =~ s/(^\s+|\s+$)//g;
-        printf $fhost ("%-20s    %s\n", $k, @servers);
+        printf $fhost ("%-16s    %s\n", @servers, $k);
     }else {
         group( "$k" => @servers );
     }
