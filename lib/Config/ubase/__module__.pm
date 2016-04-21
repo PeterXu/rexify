@@ -23,7 +23,7 @@ task "do" => sub {
 };
 
 
-desc "[\@ref] do by --mod=.., sshkey|sshd|hosts, softs|upload|fdisk|chown|run --xx";
+desc "[\@ref] do by --mod=.., sshkey|sshd|hosts, softs|upload|fdisk|chown|run|sed --xx";
 task "do_mod" => sub {
     my $args = shift;
     my $mod = $args->{mod};
@@ -81,6 +81,15 @@ task "do_mod" => sub {
         if ($args->{echo}) { $params{echo} = $args->{echo}; }
 
         Config::common::do_run(%params);
+    }elsif($mod eq "sed") {
+        unless($args->{file} or $args->{search} or $args->{replace}) {
+            die "usage: --file=.. --search=.. --replace=..\n";
+        }
+
+        $params{file} = $args->{file};
+        $params{search} = $args->{search};
+        $params{replace} = $args->{replace};
+        Config::common::do_sed(%params);
     }else {
         die "do not support --mod=$mod";
     }

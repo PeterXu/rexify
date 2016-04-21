@@ -306,5 +306,21 @@ sub do_chown {
 };
 
 
+# (file=>.., search=>.., replace=>..) 
+sub do_sed {
+    my (%params) = @_;
+    if (%params{todo} ne "true") {return;}
+
+    my $file = %params{file};
+    my $search = %params{search};
+    my $replace = %params{replace};
+
+    unless ($file or $search or $replace)  { 
+        die "usage: do_sed(file=>.., search=>.., replace=>..)\n"; 
+    }
+
+    sed qr/$search/, "$replace", $file;
+}
+
 
 1;
