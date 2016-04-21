@@ -69,6 +69,7 @@ sub parse_group {
   print $fhost "$host0\n";
 
 
+  my @etc_hosts = ();
   my $hash = Rex::Helper::INI::parse(@lines);
 
   for my $k ( keys %{$hash} ) {
@@ -88,12 +89,15 @@ sub parse_group {
     if ($k !~ /^@/) { 
         chomp $k;
         $k =~ s/(^\s+|\s+$)//g;
-        printf $fhost ("%-16s    %s\n", @servers, $k);
+        my $item = sprintf "%-16s    %s\n",@servers,$k;
+        push @etc_hosts,$item;
     }else {
         group( "$k" => @servers );
     }
   }
 
+  @etc_hosts = sort @etc_hosts;
+  print $fhost @etc_hosts;
   print $fhost "$host1\n";
   close($fhost);
 }

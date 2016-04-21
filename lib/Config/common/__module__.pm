@@ -5,11 +5,11 @@ use Rex::Commands::Partition;
 
 
 sub do_test {
-    my $output = run "uptime";
+    my $output = run "hostname && uptime";
     say $output;
 
     my (%params) = @_;
-    print "params: ", %params, "\n\n";
+    #print "params: ", %params, "\n\n";
     if (%params{todo} ne "true") {
         print "todo is not true\n";
         return;
