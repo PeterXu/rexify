@@ -15,22 +15,25 @@ rex in practice
 ---------------
 
 ##### init system
-rex -H localhost -u peter Config:ubase:do
+rex -u peter Config:ubase:do --mod=init
 
 ##### ssh, /etc/hosts and etc.
-rex -H localhost -u peter Config:ubase:do_mod --mod=sshkey
-rex -H localhost -u peter Config:ubase:do_mod --mod=sshd
-rex -H localhost -u peter Config:ubase:do_mod --mod=hosts [--cleanonly=yes]
-rex -H localhost -u peter Config:ubase:do_mod --mod=chown --path=filename [--owner=.. --group=..]
-rex -H localhost -u peter Config:ubase:do_mod --mod=upload --src=src.txt --dst=dst.txt
+rex -H localhost -u peter Config:ubase:do --mod=hosts [--cleanonly=yes]
+rex -u peter Config:ubase:do --mod=sshkey
+rex -u peter Config:ubase:do --mod=sshd
+rex -u peter Config:ubase:do --mod=chown --path=filename [--owner=.. --group=..]
+rex -u peter Config:ubase:do --mod=upload --src=src.txt --dst=dst.txt
+
+##### update config
+rex -u peter Config:ubase:do --mod=sed --file=/tmp/test.conf --search="^port = .*" --replace="port = 80"
 
 ##### install soft direct or from file
-rex -H localhost -u peter Config:ubase:do_mod --mod=softs --list=sl,unzip
-rex -H localhost -u peter Config:ubase:do_mod --mod=softs --list="@/tmp/pkg.txt"
+rex -u peter Config:ubase:do --mod=softs --list=sl,unzip
+rex -u peter Config:ubase:do --mod=softs --list="@/tmp/pkg.txt"
 
 
 ##### fdisk
-rex -H localhost -u peter Config:ubase:do_mod --mod=fdisk --mountpoint="/mnt/nshare" --ondisk=sdc --fstype=ext4 --label="sdc_label"
+rex -u peter Config:ubase:do --mod=fdisk --mountpoint="/mnt/nshare" --ondisk=sdc --fstype=ext4 --label="sdc_label"
 
 ##### git dockerfile by run
 ```
@@ -46,6 +49,6 @@ fi
 
 EOF
 ```
-rex -H localhost Config:ubase:do_mod --mod=run --cmd="@/tmp/git_dockerfile.sh" --echo=yes
+rex -u peter Config:ubase:do --mod=run --cmd="@/tmp/git_dockerfile.sh" --echo=yes
 
 

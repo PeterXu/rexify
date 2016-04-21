@@ -10,9 +10,9 @@ task "do_test" => sub {
 };
 
 
-desc "[\@ref] for apt/docker/pip/base0.txt";
-task "do" => sub {
-    my %params = ('todo'=>'true', 'ruser'=>"$ENV{RUSER}");
+sub do_init {
+    my (%params) = @_;
+    if (%params{todo} ne "true") {return;}
 
     Config::common::do_apt(%params);
     Config::common::do_docker(%params);
@@ -23,15 +23,17 @@ task "do" => sub {
 };
 
 
-desc "[\@ref] do by --mod=.., sshkey|sshd|hosts, softs|upload|fdisk|chown|run|sed --xx";
-task "do_mod" => sub {
+desc "[\@ref] do --mod=..: \n\tinit|sshkey|sshd|hosts, softs|upload|fdisk|chown|run|sed --xx";
+task "do" => sub {
     my $args = shift;
     my $mod = $args->{mod};
-    unless ($mod) { die "usage by --mod=.."; }
+    unless ($mod) { die "usage: --mod=.., rex -T"; }
 
     my %params = ('todo'=>'true', 'ruser'=>"$ENV{RUSER}");
 
-    if ($mod eq "sshkey") {
+    if($mod eq "init") {
+        do_init(%params);
+    }elsif($mod eq "sshkey") {
         Config::common::do_sshkey(%params);
     }elsif($mod eq "sshd") {
         Config::common::do_sshd(%params);
