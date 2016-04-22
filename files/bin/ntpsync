@@ -1,0 +1,6 @@
+#!/bin/sh
+
+ntpdate=`which ntpdate 2>/dev/null` || exit 0
+$ntpdate ntp.io
+
+exit 0

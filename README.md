@@ -33,21 +33,12 @@ rex -u peter Config:ubase:do --mod=softs --list="@/tmp/pkg.txt"
 
 
 ##### fdisk
-rex -u peter Config:ubase:do --mod=fdisk --mountpoint="/mnt/nshare" --ondisk=sdc --fstype=ext4 --label="sdc_label"
+rex -u peter Config:ubase:do --mod=fdisk --mountpoint="/mnt/share" --ondisk=sdc --fstype=ext4 --label="sdc_label"
 
 ##### git dockerfile by run
 ```
-cat > /tmp/git_dockerfile.sh <<EOF
-dfile="~/.dockerfile"
-if [ -d $dfile ]; then
-    cd $dfile && git pull
-else
-    rm -rf $dfile
-    uri="http://lark.io:10080/itools/dockerfile.git"
-    git clone $uri $dfile
-fi
-
-EOF
+git clone http://lark.io:10080/itools/dockerfile.git /home/soccerdojo/.dockerfile"
+cd /home/soccerdojo/.dockerfile && git pull
 ```
 rex -u peter Config:ubase:do --mod=run --cmd="@/tmp/git_dockerfile.sh" --echo=yes
 

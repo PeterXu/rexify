@@ -17,6 +17,7 @@ sub do_init {
     Config::common::do_apt(%params);
     Config::common::do_docker(%params);
     Config::common::do_pip(%params);
+    Config::common::do_ntp(%params);
 
     $params{list} = '@etc/base0.txt';
     Config::common::do_softs(%params);

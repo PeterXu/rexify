@@ -18,7 +18,7 @@ sub do_test {
 
 
 
-# ([reload=>yes|no]), default yes
+# ([reload=>yes|no], [source=>no|yes]), default reload yes, source no.
 sub do_apt {
     my (%params) = @_;
     if (%params{todo} ne "true") {return;}
@@ -26,6 +26,8 @@ sub do_apt {
     my $reload = %params{reload};
     unless ($reload) {$reload = "yes";}
 
+    my $source = %params{source};
+    if ($source eq "yes") {
     file "/etc/apt/sources.list",
         source => "files/apt/sources.list",
         owner  => "root",
@@ -34,8 +36,9 @@ sub do_apt {
         on_change => sub {
             $reload = "yes";
         };
+    }
 
-    if ($reload eq "yes") {say run "apt-get update";}
+    if ($reload eq "yes") {say run "apt-get -y update";}
 };
 
 
@@ -62,7 +65,7 @@ sub do_docker {
 
     if ($reload eq "all") {
         $reload = "yes";
-        run "apt-get update";
+        run "apt-get -y update";
     }
 
     pkg "docker-engine", 
@@ -95,6 +98,7 @@ sub do_pip {
 
     pkg "python-pip", ensure => "present";
     run "pip install -U pip";
+    run "pip install docker-compose";
 };
 
 
@@ -234,6 +238,12 @@ sub do_run {
     }
 };
 
+sub do_ntp {
+    my (%params) = @_;
+    if (%params{todo} ne "true") {return;}
+
+    upload "files/bin/ntpsync", "/etc/cron.daily/ntpsync";
+}
 
 # (mountpoint=>/mnt/share, ondisk=>sdb|c, fstype=>ext3|4, [label=>..])
 sub do_fdisk {
@@ -252,7 +262,7 @@ sub do_fdisk {
     chomp $ondisk;
     if ($ondisk =~ "^sda") { die "[WARN] <$ondisk> may be your system disk!"; }
 
-    print "[INFO] 'mount -t $fstype /dev/$ondisk $mountpoint' with lable<$label>";
+    print "[INFO] 'mount -t $fstype /dev/$ondisk $mountpoint' with lable<$label>\n";
 
     my $exec = Rex::Interface::Exec->create;
     my $device = "/dev/$ondisk";
