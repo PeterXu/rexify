@@ -372,12 +372,13 @@ sub do_gluster_mount {
         die "usage: do_gluster_mount(mountpoint=>.., volname=>.., entryhost=>..)\n";
     }
 
+    #sed -in /$volname.*glusterfs/d /etc/fstab; 
     $volname = substr($volname, 1);
     my $cmdstr = <<END;
     mount | grep "$mountpoint" && exit 0;
     mkdir -p $mountpoint; 
 
-    sed -in /$volname.*glusterfs/d /etc/fstab; 
+    sed -in /glusterfs/d /etc/fstab; 
     echo "$entryhost:/$volname $mountpoint glusterfs defaults,_netdev 0 0" >> /etc/fstab; 
     mount -a;
 
