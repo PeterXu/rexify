@@ -3,3 +3,4 @@ htop
 nload
 iptraf
 dstat
+attr

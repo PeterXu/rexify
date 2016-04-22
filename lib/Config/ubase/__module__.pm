@@ -98,6 +98,20 @@ task "do" => sub {
         $params{search} = $args->{search};
         $params{replace} = $args->{replace};
         Config::common::do_sed(%params);
+    }elsif($mod eq "gluster_client") {
+        unless($args->{dockerimg}) { die "usage: --dockerimg=..\n"; }
+
+        $params{dockerimg} = $args->{dockerimg};
+        Config::common::do_gluster_client(%params);
+    }elsif($mod eq "gluster_mount") {
+        unless($args->{mountpoint} or $args->{volname} or $args->{entryhost}) { 
+            die "usage: --mountpoint=.. --volname=.. --entryhost=..\n"; 
+        }
+
+        $params{mountpoint} = $args->{mountpoint};
+        $params{volname} = $args->{volname};
+        $params{entryhost} = $args->{entryhost};
+        Config::common::do_gluster_mount(%params);
     }else {
         die "do not support --mod=$mod";
     }

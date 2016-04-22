@@ -342,5 +342,53 @@ sub do_sed {
     sed qr/$search/, "$replace", $file;
 }
 
+# (dockerimg=>..)
+sub do_gluster_client {
+    my (%params) = @_;
+    if (%params{todo} ne "true") {return;}
+
+    my $dockerimg = %params{dockerimg};
+    unless($dockerimg) {
+        die "usage: do_gluster_client(dockerimg=>..)\n";
+    }
+
+    my $cmdstr = <<END;
+    docker pull $dockerimg;
+    docker run --rm -v /var/lib:/root/lib lark.io/glusterfs:stable cp -rf /var/lib/glusterfs /root/lib;
+    ln -sf /var/lib/glusterfs/rootfs/sbin/mount.glusterfs /sbin/;
+END
+    say run "$cmdstr";
+}
+
+# (mountpoint=>.., volname=>.., entryhost=>..)
+sub do_gluster_mount {
+    my (%params) = @_;
+    if (%params{todo} ne "true") {return;}
+
+    my $mountpoint = %params{mountpoint};
+    my $volname = %params{volname};
+    my $entryhost = %params{entryhost};
+    unless($mountpoint or $volname or $entryhost) {
+        die "usage: do_gluster_mount(mountpoint=>.., volname=>.., entryhost=>..)\n";
+    }
+
+    $volname = substr($volname, 1);
+    my $cmdstr = <<END;
+    mount | grep "$mountpoint" && exit 0;
+    mkdir -p $mountpoint; 
+
+    sed -in /$volname.*glusterfs/d /etc/fstab; 
+    echo "$entryhost:/$volname $mountpoint glusterfs defaults,_netdev 0 0" >> /etc/fstab; 
+    mount -a;
+
+    cat /etc/rc.local | grep "mount -a" && exit 0;
+    sed -in '/^exit 0/d' /etc/rc.local;
+    echo 'mount -a' >> /etc/rc.local; 
+    echo 'exit 0' >> /etc/rc.local;
+END
+    say run "$cmdstr";
+}
+
+
 
 1;
