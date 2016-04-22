@@ -54,6 +54,10 @@ sub do_docker {
     my $reload = %params{reload};
     unless ($ruser) { die "usage: do_docker(ruser=>.., [reload=yes|no|all])"; }
 
+    my $version = %params{version};
+    unless($version) { $version = "present"; }
+
+
     file "/etc/apt/sources.list.d/docker.list",
         source => "files/apt/docker.list",
         owner  => "root",
@@ -69,7 +73,7 @@ sub do_docker {
     }
 
     pkg "docker-engine", 
-        ensure => "present",
+        ensure => "$version",
         on_change => sub { 
             $reload = "yes";
             say run "usermod -aG docker $ruser";
@@ -98,7 +102,13 @@ sub do_pip {
 
     pkg "python-pip", ensure => "present";
     run "pip install -U pip";
-    run "pip install docker-compose";
+
+    my $version = %params{version};
+    unless($version) { 
+        run "pip install docker-compose";
+    }else {
+        run "pip install docker-compose==$version";
+    }
 };
 
 

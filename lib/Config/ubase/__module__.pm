@@ -15,8 +15,13 @@ sub do_init {
     if (%params{todo} ne "true") {return;}
 
     Config::common::do_apt(%params);
+
+    $params{version} = '1.11.0-0~trusty';
     Config::common::do_docker(%params);
+
+    $params{version} = '1.7.0';
     Config::common::do_pip(%params);
+
     Config::common::do_ntp(%params);
 
     $params{list} = '@etc/base0.txt';
