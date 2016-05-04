@@ -252,8 +252,27 @@ sub do_ntp {
     my (%params) = @_;
     if (%params{todo} ne "true") {return;}
 
-    upload "files/bin/ntpsync", "/etc/cron.daily/ntpsync";
-}
+    my $service_name = case operating_system, {
+        Debian  => "ntp",
+        default => "ntpd",
+    };
+
+    pkg "ntp", ensure => "present";
+
+    # custom ntp.conf
+    my $ntp_server   = case environment, {
+        prod    => ["0.ubuntu.pool.ntp.org", "1.ubuntu.pool.ntp.org", "2.ubuntu.pool.ntp.org", "3.ubuntu.pool.ntp.org"],
+        default => ["ntp.ubuntu.com"],
+    };
+
+    file "/etc/ntp.conf",
+        content   => template("files/etc/ntp.conf", ntp_servers => $ntp_server),
+        on_change => sub {
+            service $service_name => "restart";
+        };
+
+    service $service_name, ensure => "started";
+};
 
 # (mountpoint=>/mnt/share, ondisk=>sdb|c, fstype=>ext3|4, [label=>..])
 sub do_fdisk {
