@@ -2,6 +2,18 @@ rex: management for server
 ==========================
 
 
+rex install
+-----------
+
+### 1. common install
+    curl -L https://get.rexify.org | perl - --sudo -n Rex
+
+### 2. for ubuntu 14.04
+    echo 'deb http://rex.linux-files.org/ubuntu/ trusty rex' >/etc/apt/sources.list.d/rex.list
+    apt-get update
+    apt-get install rex=1.4.0-1
+
+
 rex usage
 ----------
 
