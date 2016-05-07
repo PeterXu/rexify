@@ -5,6 +5,5 @@ curl
 fuse
 lvm2
 util-linux
-ntp
 #iftop
 #iptraf

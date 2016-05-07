@@ -45,6 +45,6 @@ rex -u peter Config:ubase:do --mod=run --cmd="@/tmp/git_dockerfile.sh" --echo=ye
 
 ##### gluster 
 rex -u peter Config:ubase:do --mod=gluster_client --dockerimg="lark.io/gluster:stable"
-rex -u peter Config:ubase:do --mod=gluster_mount --mountpoint=/mnt/nshare --volname=/disp_repl_vol --entryhost=127.0.0.1
+rex -u peter Config:ubase:do --mod=gluster_mount --mountpoint=/mnt/nshare --volname=/dist_repl_vol --entryhost=127.0.0.1
 
 

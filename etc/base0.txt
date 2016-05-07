@@ -4,3 +4,4 @@ nload
 iptraf
 dstat
 attr
+nfs-common
