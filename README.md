@@ -13,6 +13,10 @@ rex install
     apt-get update
     apt-get install rex=1.4.0-1
 
+### 3. fix pkg(apt-get)
+    add "--force-yes" into /usr/local/share/perl/<perl_ver>/Rex/Pkg/Debian.pm
+
+
 
 rex usage
 ----------
