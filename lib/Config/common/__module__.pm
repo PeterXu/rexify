@@ -373,7 +373,7 @@ sub do_gluster_client {
 
     my $cmdstr = <<END;
     docker pull $dockerimg;
-    docker run --rm -v /var/lib:/root/lib lark.io/glusterfs:stable cp -rf /var/lib/glusterfs /root/lib;
+    docker run --rm -v /var/lib:/root/lib $dockerimg cp -rf /var/lib/glusterfs /root/lib;
     ln -sf /var/lib/glusterfs/rootfs/sbin/mount.glusterfs /sbin/;
 END
     say run "$cmdstr";

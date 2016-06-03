@@ -39,6 +39,7 @@ rex -u peter Config:ubase:do --mod=sshkey
 rex -u peter Config:ubase:do --mod=sshd
 rex -u peter Config:ubase:do --mod=chown --path=filename [--owner=.. --group=..]
 rex -u peter Config:ubase:do --mod=upload --src=src.txt --dst=dst.txt
+rex -u peter Config:ubase:do --mod=run --cmd="uptime" --echo=yes
 
 ##### update config
 rex -u peter Config:ubase:do --mod=sed --file=/tmp/test.conf --search="^port = .*" --replace="port = 80"
