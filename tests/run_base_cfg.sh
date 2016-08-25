@@ -174,7 +174,7 @@ do_swarm()
 {
     local yml="swarmagent-fig.yml"
     local msg="replace <127.0.0.1> in $yml"
-    local cmd="host=\$(hostname).sportsdata.cn; sed -in \"s/127.0.0.1/\$host/\" ~/.dockerfile/yaml/$yml"
+    local cmd="host=\$(hostname).example.org; sed -in \"s/127.0.0.1/\$host/\" ~/.dockerfile/yaml/$yml"
     do_docker_run $yml "$msg" "$cmd"
 }
 
