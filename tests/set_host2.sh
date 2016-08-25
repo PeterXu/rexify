@@ -55,7 +55,7 @@ broadcast ${ip1pre}.255
 
 # dns-* options are implemented by the resolvconf package, if installed
 dns-nameservers $dns 202.102.192.68
-dns-search sportsdata.cn
+dns-search example.org
 EOF
 
 echo
