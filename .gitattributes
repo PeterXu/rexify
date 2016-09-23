@@ -1,3 +1,4 @@
-*.pm linguist-language=Perl
 files/* linguist-documentation
-lib/* linguist-vendored
+tests/* linguist-documentation
+modules/* linguist-documentation
+*.pm linguist-language=Perl
