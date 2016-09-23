@@ -1,2 +1,3 @@
 *.pm linguist-language=Perl
 files/* linguist-documentation
+lib/* linguist-vendored
